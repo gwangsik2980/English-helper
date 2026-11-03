@@ -28,6 +28,13 @@
   - 예전 코드는 natural/google 이름을 먼저 골라 PC에서 1~2초 지연된 것으로 추정
   - iOS 장난용 음성(Albert, Bubbles 등)은 제외. 아이폰은 두 설정 모두 Samantha
   - "듣기"를 누를 때마다 목소리를 다시 고름 (설정 변경이 바로 적용)
+- 대화 화면 스크롤 버그 수정 (사용자 제보: 폰에서 대화창을 누르고 위로 밀면 화면이 끝없이 올라감)
+  - 원인 추정: 아이폰 사파리는 `interactive-widget=resizes-content`를 무시해서, 키보드가 열리면 문서 전체가 끌려 움직임
+  - `src/features/conversation/use-chat-viewport.ts`: 대화 화면을 visualViewport 크기에 고정, `html.chat-lock`으로 뒤 페이지 잠금, 목록과 입력창 밖의 touchmove 막기. 목록은 `overscroll-contain`
+  - 크로미움 폰 에뮬레이션에서 터치 드래그로 확인(페이지 scrollY 0 유지, 목록만 스크롤). 실제 아이폰 확인은 아직
+- 목소리 개선 (사용자 선택: 무료로 최대한 개선)
+  - `pickEnglishVoice`: 기기에 내려받은 애플 프리미엄·향상된 음성(voiceURI `com.apple.voice.premium|enhanced`, 이름의 Premium/Enhanced)을 두 설정 모두에서 최우선
+  - 설정 > 음성에 "지금 쓰는 목소리" 표시와 고품질 음성 내려받는 방법 안내. iOS 메뉴 이름은 추정이라 사용자 확인 필요
 - 저작권 표시 `© 2026 GWANG. All rights reserved.` (`src/features/ui/SiteFooter.tsx`)
   - 앱 화면, 로그인·가입·비밀번호 찾기, 온보딩 맨 아래. 대화 화면은 입력창과 겹쳐서 제외
 - 로그인·가입 화면 정리: 제목 위 작은 문구("다시 오셨네요", "처음 시작하기")와 로그인 아래 데이터 안내 문장 삭제 (사용자 요청. 데이터 안내는 온보딩·설정에 남아 있음)

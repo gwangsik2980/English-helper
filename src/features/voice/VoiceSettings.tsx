@@ -8,6 +8,8 @@ export function VoiceSettings() {
   const { prefs, update } = useVoicePrefs();
   const stt = useSpeechRecognition(() => {});
   const tts = useSpeechSynthesis();
+  const voice = tts.supported ? tts.voiceFor(prefs.naturalVoice) : null;
+  const upgraded = voice ? /premium|enhanced|프리미엄|향상/i.test(`${voice.name} ${voice.voiceURI}`) : false;
 
   return (
     <div className="space-y-5">
@@ -66,6 +68,29 @@ export function VoiceSettings() {
           />
         </label>
       </fieldset>
+
+      {tts.supported && (
+        <div className="card-soft space-y-2 p-4 text-sm">
+          <p>
+            <span className="text-muted">지금 쓰는 목소리 </span>
+            <span className="font-semibold" lang="en">
+              {voice ? voice.name : "영어 목소리를 찾는 중이거나 이 기기에 없어요"}
+            </span>
+            {upgraded && <span className="text-muted"> · 고품질</span>}
+          </p>
+          {voice && !upgraded && (
+            <p className="text-muted">
+              목소리가 기계적으로 들리면 기기에 고품질 영어 음성을 한 번 내려받아 보세요. 무료이고, 받은 뒤 이 화면을 다시 열면
+              자동으로 그 목소리를 써요.
+              <br />
+              아이폰: 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어에서 Ava나 Zoe 같은 &lsquo;프리미엄&rsquo; 또는
+              &lsquo;향상된&rsquo; 음성을 내려받기
+              <br />
+              맥: 시스템 설정 → 손쉬운 사용 → 읽기 및 말하기 → 시스템 음성 옆 정보 버튼에서 같은 음성 내려받기
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="space-y-1 text-sm text-muted">
         <p>

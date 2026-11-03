@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCalmFluid } from "@/features/ui/FluidBackground";
 import { FeedbackProgress } from "./FeedbackProgress";
+import { useChatViewport } from "./use-chat-viewport";
 import {
   ArrowRight,
   LogoMark,
@@ -71,6 +72,7 @@ export function ChatRoom(props: Props) {
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [ending, setEnding] = useState<"idle" | "working" | "failed">("idle");
   const [endError, setEndError] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -113,6 +115,7 @@ export function ChatRoom(props: Props) {
 
   // Reading screen: keep the ink background calm behind the conversation.
   useCalmFluid();
+  useChatViewport(rootRef, listRef);
 
   useEffect(() => {
     listRef.current?.scrollTo({
@@ -198,7 +201,7 @@ export function ChatRoom(props: Props) {
   const userTurnCount = turns.filter((t) => t.speaker === "user").length;
 
   return (
-    <div className="flex h-dvh flex-col">
+    <div ref={rootRef} className="fixed inset-x-0 top-0 flex h-dvh flex-col">
       <header className="border-b border-white/10 bg-[rgb(4_5_12/0.5)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
           <Link
@@ -309,7 +312,7 @@ export function ChatRoom(props: Props) {
 
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto overscroll-contain"
         aria-live="polite"
         aria-label="대화 내용"
       >
