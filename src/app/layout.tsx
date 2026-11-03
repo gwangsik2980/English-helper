@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Galada, Onest } from "next/font/google";
 import type { ReactNode } from "react";
 import { FluidBackground } from "@/features/ui/FluidBackground";
+import { NoPinchZoom } from "@/features/ui/NoPinchZoom";
 import "./globals.css";
 
 // Onest carries the type (Lumora structure, Flowstate mood); Galada is the accent script.
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  // Pinch zoom would scale and push the fixed header and bottom bar like
+  // any page content; the app behaves like a native app instead (user request).
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#04050c",
   // Lets the chat input stay above the mobile keyboard.
   interactiveWidget: "resizes-content",
@@ -28,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="ko" className={`${onest.variable} ${galada.variable} h-full`}>
       <body className="min-h-full">
         <FluidBackground />
+        <NoPinchZoom />
         {children}
       </body>
     </html>
