@@ -1,7 +1,7 @@
 # 작업 인수인계 (다음 세션용)
 
 새 세션은 이 문서와 `CLAUDE.md`, `README.md`를 먼저 읽고 시작한다.
-배포 브랜치: `main` (Vercel이 main을 배포). 마지막 작업 브랜치: `claude/loving-fermat-2dlpem` (역량 관찰 개선, main 반영은 사용자 요청 시)
+배포 브랜치: `main` (Vercel이 main을 배포). 마지막 작업 브랜치: `claude/loving-fermat-2dlpem` (역량 관찰 개선 + 홈 화면 아이콘, main에 반영함)
 
 ## 현재 상태
 
@@ -21,6 +21,8 @@
   - 서버 규칙(`validateFeedback`): 근거 문장 수로 확신도 상한(1개 0.5, 2~3개 0.7, 4개 이상 0.85, 듣기 0.6), 근거 없는 관찰 제거
   - 결과 화면: 확신도 퍼센트 대신 "근거 n문장"과 이유 한 줄, 추세 제외 항목에 "참고만"
   - 실제 Opus 재현: 중간 수준 대화 → 성장 중 0.55~0.6, 잘한 대화 → 능숙 0.65~0.8. 단계와 확신도가 갈라짐
+- 홈 화면 앱: `src/app/manifest.ts`(이름 QUEST, standalone), `public/icon-*.png`, `src/app/apple-icon.png`, `layout.tsx`의 `appleWebApp`
+  - 아이콘은 메인 화면 엠블럼(`LogoMark` 별)을 검은 바탕에 흰색으로 그린 PNG. 다시 만들려면 같은 SVG path를 Playwright로 캡처
 - 점검: `npm run typecheck`, `npm run lint`, `npm test`(35개), `npm run build` 모두 통과. 실제 Claude로 미션 → 결과 화면 확인
 
 ## 배포 상태 (2026-11-03)
@@ -41,7 +43,7 @@
 
 ## 다음 할 일
 
-1. `claude/loving-fermat-2dlpem`을 사용자가 요청하면 main에 반영 (배포됨)
+1. 듣기 지연: 사용자 기기는 아이폰 사파리, PC 크롬·엣지. 코드가 natural/google 이름 음성을 우선하는데 크롬 Google 음성과 엣지 Online (Natural) 음성은 네트워크 음성이라 지연 원인으로 추정. 기기 내장 음성 우선으로 바꿀지 사용자 결정 대기
 2. 초보 학습자의 짧은 대화(8단어 미만)는 평가 보류돼 역량 기록이 안 남음. 기준 조정할지 사용자와 논의
 3. (보류) 도메인 구매 → Vercel 연결 + Resend 도메인 인증 → `MAIL_FROM`. 사용자가 먼저 익숙해진 뒤 진행
 4. `claude/friendly-tesla-oymvp0` 브랜치는 반영 안 하기로 함. 세션 권한으로 원격 삭제가 막혀 사용자가 GitHub에서 지울 예정

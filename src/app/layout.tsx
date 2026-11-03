@@ -11,6 +11,8 @@ const galada = Galada({ subsets: ["latin"], weight: "400", variable: "--font-gal
 export const metadata: Metadata = {
   title: "ENGLISH QUEST",
   description: "생활 속 상황 미션으로 영어 대화를 연습하는 학습 웹앱",
+  // iPhone Safari reads the home screen name and full-screen mode from these tags, not the manifest.
+  appleWebApp: { capable: true, title: "QUEST", statusBarStyle: "black" },
 };
 
 export const viewport: Viewport = {
