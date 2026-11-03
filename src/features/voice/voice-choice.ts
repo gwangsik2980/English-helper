@@ -32,6 +32,18 @@ const isEnhanced = (v: VoiceLike) => v.localService && ENHANCED.test(quality(v))
 const isEnUS = (v: VoiceLike) => v.lang.replace("_", "-") === "en-US";
 const isEn = (v: VoiceLike) => v.lang.toLowerCase().startsWith("en");
 
+/** English voices worth offering in a picker: no joke voices, high-quality ones first. */
+export function englishVoices<V extends VoiceLike>(voices: readonly V[]): V[] {
+  const rank = (v: V) => (isPremium(v) ? 0 : isEnhanced(v) ? 1 : 2);
+  return voices
+    .filter((v) => isEn(v) && !NOVELTY.test(v.name))
+    .map((v, i) => ({ v, i }))
+    .sort((a, b) => rank(a.v) - rank(b.v) || a.i - b.i)
+    .map(({ v }) => v);
+}
+
+export const isHighQuality = (v: VoiceLike) => isPremium(v) || isEnhanced(v);
+
 export function pickEnglishVoice<V extends VoiceLike>(voices: readonly V[], preferNatural: boolean): V | null {
   const usable = voices.filter((v) => isEn(v) && !NOVELTY.test(v.name));
   const first = (...tests: ((v: V) => boolean)[]) => {

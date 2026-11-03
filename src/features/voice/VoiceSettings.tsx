@@ -1,6 +1,7 @@
 "use client";
 
 import { useSpeechSynthesis } from "./speech-synthesis";
+import { isHighQuality } from "./voice-choice";
 import { useVoicePrefs } from "./voice-prefs";
 
 const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (on: boolean) => void }) => (
@@ -18,8 +19,9 @@ const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean;
 export function VoiceSettings() {
   const { prefs, update } = useVoicePrefs();
   const tts = useSpeechSynthesis();
-  const voice = tts.supported ? tts.voiceFor(prefs.naturalVoice) : null;
-  const upgraded = voice ? /premium|enhanced|프리미엄|향상/i.test(`${voice.name} ${voice.voiceURI}`) : false;
+  const voice = tts.supported ? tts.voiceFor(prefs.naturalVoice, prefs.voiceURI) : null;
+  const upgraded = voice ? isHighQuality(voice) : false;
+  const hasHighQuality = tts.choices.some(isHighQuality);
 
   if (!tts.supported) {
     return <p className="text-sm text-muted">이 브라우저는 소리로 읽기를 지원하지 않아요. 텍스트로는 그대로 쓸 수 있어요.</p>;
@@ -38,7 +40,40 @@ export function VoiceSettings() {
         />
       </fieldset>
 
-      <div className="card-soft space-y-1 p-4 text-sm">
+      <div className="card-soft space-y-3 p-4 text-sm">
+        <div>
+          <label htmlFor="voice-pick" className="label">
+            목소리
+          </label>
+          <div className="flex gap-2">
+            <select
+              id="voice-pick"
+              className="input flex-1"
+              value={prefs.voiceURI ?? ""}
+              onChange={(e) => update({ voiceURI: e.target.value || null })}
+            >
+              <option value="">자동으로 고르기</option>
+              {tts.choices.map((v) => (
+                <option key={v.voiceURI} value={v.voiceURI}>
+                  {v.name} · {v.lang}
+                  {isHighQuality(v) ? " · 고품질" : ""}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="btn-secondary shrink-0"
+              disabled={!voice}
+              onClick={() =>
+                tts.speakingId === "preview"
+                  ? tts.stop()
+                  : tts.speak("preview", "Hi there! What can I get started for you today?", prefs.rate, prefs.naturalVoice, prefs.voiceURI)
+              }
+            >
+              {tts.speakingId === "preview" ? "멈추기" : "들어 보기"}
+            </button>
+          </div>
+        </div>
         <p>
           <span className="text-muted">지금 목소리 </span>
           <span className="font-semibold" lang="en">
@@ -46,9 +81,15 @@ export function VoiceSettings() {
           </span>
           {upgraded && <span className="text-muted"> · 고품질</span>}
         </p>
-        {voice && !upgraded && (
+        {tts.error && (
+          <p role="alert" className="text-bad">
+            {tts.error}
+          </p>
+        )}
+        {tts.choices.length > 0 && !hasHighQuality && (
           <p className="text-muted">
-            아이폰은 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어에서 Ava 프리미엄을 받으면 더 자연스러워요.
+            이 브라우저가 넘겨준 영어 목소리 {tts.choices.length}개 중에 고품질 음성이 없어요. 기기에 받아 둔 음성이 목록에 없다면
+            브라우저가 웹사이트에 그 음성을 열어 주지 않는 거예요.
           </p>
         )}
       </div>
