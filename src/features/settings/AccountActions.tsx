@@ -74,3 +74,133 @@ export function DeleteAccount() {
     </div>
   );
 }
+
+export function ChangePassword() {
+  const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  function reset() {
+    setCurrent("");
+    setNext("");
+    setConfirm("");
+    setError(null);
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (next.length < 8) return setError("새 비밀번호는 8자 이상으로 정해 주세요.");
+    if (next !== confirm) return setError("두 비밀번호가 달라요. 같은 비밀번호를 한 번 더 입력해 주세요.");
+    setBusy(true);
+    setError(null);
+    try {
+      await api("/api/account/password", { method: "POST", json: { currentPassword: current, newPassword: next } });
+      reset();
+      setOpen(false);
+      setDone(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "바꾸지 못했어요. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <div className="space-y-3">
+        {done && (
+          <p role="status" className="rounded-[0.875rem] bg-ok-soft px-3 py-2 text-sm text-ok">
+            비밀번호를 바꿨어요. 이 기기를 뺀 다른 기기의 로그인은 모두 풀렸어요.
+          </p>
+        )}
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => {
+            setDone(false);
+            setOpen(true);
+          }}
+        >
+          비밀번호 바꾸기
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <div>
+        <label htmlFor="current-password" className="label">
+          지금 비밀번호
+        </label>
+        <input
+          id="current-password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className="input"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+        />
+      </div>
+      <div>
+        <label htmlFor="new-password" className="label">
+          새 비밀번호
+        </label>
+        <input
+          id="new-password"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          aria-describedby="change-pw-help"
+          className="input"
+          value={next}
+          onChange={(e) => setNext(e.target.value)}
+        />
+        <p id="change-pw-help" className="mt-1.5 text-sm text-muted">
+          8자 이상으로 정해 주세요. 바꾸면 이 기기를 뺀 다른 기기의 로그인이 풀려요.
+        </p>
+      </div>
+      <div>
+        <label htmlFor="confirm-new-password" className="label">
+          새 비밀번호 확인
+        </label>
+        <input
+          id="confirm-new-password"
+          type="password"
+          autoComplete="new-password"
+          required
+          className="input"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
+      </div>
+      {error && (
+        <p role="alert" className="rounded-[0.875rem] bg-bad-soft px-3 py-2 text-sm text-bad">
+          {error}
+        </p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className="btn-primary" disabled={busy || !current}>
+          {busy ? "바꾸는 중…" : "새 비밀번호 저장"}
+        </button>
+        <button
+          type="button"
+          className="btn-ghost"
+          disabled={busy}
+          onClick={() => {
+            reset();
+            setOpen(false);
+          }}
+        >
+          취소
+        </button>
+      </div>
+    </form>
+  );
+}

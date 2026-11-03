@@ -1,5 +1,5 @@
 import { ProfileForm } from "@/features/profile/ProfileForm";
-import { DeleteAccount, LogoutButton } from "@/features/settings/AccountActions";
+import { ChangePassword, DeleteAccount, LogoutButton } from "@/features/settings/AccountActions";
 import { VoiceSettings } from "@/features/voice/VoiceSettings";
 import { requirePageUser } from "@/server/http";
 import { getProfile } from "@/server/services/profile";
@@ -42,6 +42,13 @@ export default async function SettingsPage() {
           음성
         </h2>
         <VoiceSettings />
+      </section>
+
+      <section aria-labelledby="security-title" className="card reveal space-y-4 sm:p-8">
+        <h2 id="security-title" className="section-title">
+          계정 보안
+        </h2>
+        <ChangePassword />
       </section>
 
       <section aria-labelledby="privacy-title" className="card reveal space-y-4 sm:p-8">

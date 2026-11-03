@@ -12,12 +12,13 @@
 - 비밀번호 재설정 완료: 메일 어댑터(`src/server/mail`, Resend REST + 개발용 콘솔), 서비스 `src/server/services/password-reset.ts`, 화면 `/forgot-password`, `/reset-password`
   - 토큰 해시만 저장, 1회용, 30분 만료, 새 요청 시 이전 링크 만료, 사용 시 모든 로그인 세션 폐기
   - 계정 존재 여부 비노출 (조회와 발송을 `after()`로 응답 뒤에 처리), IP당 15분 5회 + 계정당 1시간 3통
+  - 설정 > 계정 보안에서 비밀번호 변경 (`POST /api/account/password`, 지금 비밀번호 확인, 사용자당 15분 5회, 현재 세션만 유지)
   - 로그인 상태로도 재설정 링크를 열 수 있게 `(public)` 레이아웃의 로그인 리다이렉트를 로그인·가입·비밀번호 찾기 페이지로 옮김
-- 점검: `npm run typecheck`, `npm run lint`, `npm test`(31개), `npm run build` 모두 통과. Playwright로 재설정 전체 흐름 확인
+- 점검: `npm run typecheck`, `npm run lint`, `npm test`(32개), `npm run build` 모두 통과. Playwright로 재설정 전체 흐름 확인
 
 ## 다음 할 일 (사용자 확정 순서)
 
-1. **Resend 실제 발송 연결** (사용자 작업)
+1. **Resend 실제 발송 연결** (사용자가 가입 진행하기로 함, 키와 도메인 받으면 연결)
    - 무료 구간: 월 3,000통, 하루 100통 (검색 결과 요약 기준, resend.com은 이 환경 네트워크에서 막혀 직접 확인 못 함)
    - `onboarding@resend.dev` 발신은 Resend 계정 본인 메일로만 감. 다른 사람에게 보내려면 도메인 DNS 인증 필요
    - 환경 변수: `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`(운영 필수)

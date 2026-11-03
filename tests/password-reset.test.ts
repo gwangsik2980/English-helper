@@ -107,3 +107,24 @@ describe("password reset", () => {
     expect(() => parseResetRequest({ email: "not-an-email" })).toThrow(AppError);
   });
 });
+
+describe("change password while signed in", () => {
+  it("needs the current password, keeps this session, and signs out the others", async () => {
+    const { changePassword } = await import("@/server/services/account");
+    const { email, token: here, userId } = await newAccount();
+    const elsewhere = await logIn({ email, password: "old-password" });
+    await sendResetLink(email, BASE);
+    const resetToken = tokenFromMail(outbox[0]);
+
+    await expectCode(changePassword(userId, here, { currentPassword: "wrong-pass", newPassword: "new-password" }), "invalid_input");
+    await expectCode(changePassword(userId, here, { currentPassword: "old-password", newPassword: "short" }), "invalid_input");
+    await expectCode(changePassword(userId, here, { currentPassword: "old-password", newPassword: "old-password" }), "invalid_input");
+
+    await changePassword(userId, here, { currentPassword: "old-password", newPassword: "new-password" });
+    expect(await userIdFromToken(here)).toBe(userId);
+    expect(await userIdFromToken(elsewhere.token)).toBeNull();
+    // An outstanding reset link no longer works.
+    await expectCode(resetPassword({ token: resetToken, password: "third-pass" }), "token_invalid");
+    expect((await logIn({ email, password: "new-password" })).userId).toBe(userId);
+  });
+});
