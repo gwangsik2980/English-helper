@@ -46,12 +46,12 @@ export function DeleteAccount() {
   if (step === "idle") {
     return (
       <button type="button" className="btn-danger" onClick={() => setStep("confirm")}>
-        계정과 모든 학습 데이터 삭제
+        계정 삭제
       </button>
     );
   }
   return (
-    <div className="space-y-2 rounded-[0.875rem] border border-bad p-4">
+    <div className="w-full space-y-2 rounded-[0.875rem] border border-bad p-4">
       <p className="font-semibold text-bad">삭제하면 되돌릴 수 없어요.</p>
       <p className="text-sm">대화 기록, 피드백, 경험치, 복습 표현, 계정이 모두 지워져요.</p>
       <label htmlFor="confirm-delete" className="label">
