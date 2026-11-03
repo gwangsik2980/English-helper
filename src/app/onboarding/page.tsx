@@ -1,5 +1,6 @@
 import { ProfileForm } from "@/features/profile/ProfileForm";
 import { LogoMark } from "@/features/ui/Icons";
+import { SiteFooter } from "@/features/ui/SiteFooter";
 import { requirePageUser } from "@/server/http";
 import { getProfile } from "@/server/services/profile";
 
@@ -48,6 +49,7 @@ export default async function OnboardingPage() {
           먼저 안내한 뒤 물어봐요. 거부해도 텍스트로 계속 학습할 수 있고, 녹음된 소리는 우리 서버에 저장되지 않아요.
         </p>
       </section>
+      <SiteFooter className="mt-10" />
     </main>
   );
 }

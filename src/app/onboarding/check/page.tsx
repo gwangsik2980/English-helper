@@ -1,5 +1,6 @@
 import { LevelCheck } from "@/features/onboarding/LevelCheck";
 import { LogoMark } from "@/features/ui/Icons";
+import { SiteFooter } from "@/features/ui/SiteFooter";
 import { requirePageUser } from "@/server/http";
 import { getProfile } from "@/server/services/profile";
 
@@ -34,6 +35,7 @@ export default async function LevelCheckPage() {
           }}
         />
       </section>
+      <SiteFooter className="mt-10" />
     </main>
   );
 }

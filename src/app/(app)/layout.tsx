@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoMark } from "@/features/ui/Icons";
+import { SiteFooter } from "@/features/ui/SiteFooter";
 import { BottomNav, TopNav } from "@/features/ui/NavLinks";
 import { aiMode } from "@/server/ai";
 import { requirePageUser } from "@/server/http";
@@ -42,6 +43,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <main id="main" className="relative mx-auto w-full max-w-[88rem] px-5 py-8 sm:px-8 lg:py-12">
         {children}
       </main>
+      <SiteFooter className="mx-auto w-full max-w-[88rem] px-5 pb-8 sm:px-8" />
       <BottomNav />
     </div>
   );

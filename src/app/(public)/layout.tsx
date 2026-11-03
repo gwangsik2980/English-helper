@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { FloatingBits } from "@/features/ui/FloatingBits";
 import { FluidMode } from "@/features/ui/FluidBackground";
 import { LogoMark } from "@/features/ui/Icons";
+import { SiteFooter } from "@/features/ui/SiteFooter";
 
 const BITS = [
   { text: "Could I have a latte?", top: "16%", left: "46%", size: "md" as const },
@@ -48,9 +49,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
       <section className="flex flex-col justify-center px-5 py-10 sm:px-8 lg:px-16">
         <div className="mx-auto w-full max-w-md">
           {children}
-          <p className="mt-6 text-xs leading-relaxed text-subtle">
-            대화 내용은 피드백과 성장 기록을 만드는 데만 쓰여요. 설정에서 언제든 내려받거나 삭제할 수 있어요.
-          </p>
+          <SiteFooter className="mt-6" />
         </div>
       </section>
     </main>
