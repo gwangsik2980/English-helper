@@ -6,12 +6,26 @@
 
 ## 빠르게 실행하기
 
+PostgreSQL이 필요합니다. 로컬에 없으면 Docker로 띄울 수 있습니다.
+
+```bash
+docker run -d --name eq-postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+```
+
+```bash
+docker exec eq-postgres psql -U postgres -c "create database english_quest" -c "create database english_quest_test"
+```
+
 ```bash
 npm install
 cp .env.example .env
 npm run db:setup
 npm run dev
 ```
+
+- `npm run db:setup`은 마이그레이션(`prisma/migrations`)을 적용하고 미션을 시드합니다.
+- 스키마를 바꿀 때는 `npm run db:migrate -- --name 변경내용`으로 새 마이그레이션을 만듭니다.
+- 테스트는 `english_quest_test` DB를 매번 비우고 다시 만듭니다. 다른 DB를 쓰려면 `TEST_DATABASE_URL`을 지정하되, 이름이 `_test`로 끝나지 않으면 실행을 거부합니다.
 
 http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 
@@ -46,6 +60,17 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 - 로그인한 상태에서는 설정 > 계정 보안에서 지금 비밀번호를 확인한 뒤 바꿀 수 있습니다. 이 기기는 로그인이 유지되고 다른 기기 로그인과 남아 있던 재설정 링크는 무효가 됩니다.
 - 운영에서는 `APP_URL`이 꼭 있어야 합니다. 요청의 Host 헤더로 링크를 만들면 공격자가 링크 주소를 자기 도메인으로 바꿀 수 있어서입니다.
 
+## 배포 (Vercel + Neon)
+
+1. Neon에서 프로젝트를 만들고 Vercel 프로젝트에 연결합니다.
+2. Vercel 환경 변수에 아래 값을 넣습니다.
+   - `DATABASE_URL`: Neon pooled 연결 문자열 (호스트에 `-pooler`가 있는 것)
+   - `DATABASE_URL_UNPOOLED`: Neon direct 연결 문자열 (마이그레이션용)
+   - `APP_URL`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `MAIL_FROM`
+3. Vercel은 `vercel-build` 스크립트로 빌드합니다. 마이그레이션 적용, 미션 시드, `next build` 순서입니다.
+
+Claude를 부르는 API(대화 턴, 미션 완료)는 `maxDuration = 60`으로 최대 60초까지 기다립니다. 2026-11-03에 Opus로 한 번 재 보니 대화 턴은 2~3초, 피드백 분석은 약 12초였습니다. Vercel 무료 플랜 기본 한도 10초는 넘기 때문에 이 설정이 필요합니다.
+
 ## 구조
 
 ```
@@ -79,4 +104,3 @@ npm run build
 - IP 기준 속도 제한이 서버 메모리 기반이라 서버를 여러 대 띄우면 각각 따로 셈. 또 `x-forwarded-for`를 그대로 믿으므로 프록시 뒤가 아니면 우회 가능 (비밀번호 재설정의 계정당 제한은 DB 기준이라 영향 없음)
 - 데모 모드 상대역은 정해진 대사를 순서대로 말하므로 사용자 답에 반응하지 못함
 - 미션 문구와 힌트는 초안이라 검수 필요
-- SQLite로 개발. 배포 시 `prisma/schema.prisma`의 provider를 `postgresql`로 바꿔야 함

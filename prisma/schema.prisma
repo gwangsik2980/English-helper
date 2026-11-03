@@ -1,13 +1,16 @@
 // ENGLISH QUEST logical data model (spec section 8).
-// SQLite for local development; switch provider to "postgresql" for deployment.
+// PostgreSQL everywhere (local, tests, Neon in production).
+// DATABASE_URL: pooled connection for the app (Neon host with "-pooler").
+// DATABASE_URL_UNPOOLED: direct connection, used by Prisma Migrate.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {

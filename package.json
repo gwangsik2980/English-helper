@@ -9,9 +9,11 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "db:setup": "prisma db push && tsx prisma/seed.ts",
+    "db:setup": "prisma migrate deploy && tsx prisma/seed.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "vercel-build": "prisma migrate deploy && tsx prisma/seed.ts && next build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

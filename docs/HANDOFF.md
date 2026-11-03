@@ -22,8 +22,10 @@
    - 무료 구간: 월 3,000통, 하루 100통 (검색 결과 요약 기준, resend.com은 이 환경 네트워크에서 막혀 직접 확인 못 함)
    - `onboarding@resend.dev` 발신은 Resend 계정 본인 메일로만 감. 다른 사람에게 보내려면 도메인 DNS 인증 필요
    - 환경 변수: `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`(운영 필수)
-2. **배포** (5단계): Vercel + Postgres(Neon 등). 계정 생성과 연결은 사용자가 직접 함
-   - `prisma/schema.prisma` provider를 `postgresql`로, 마이그레이션 방식 정리
+2. **배포** (5단계): Vercel + Neon으로 결정. 계정 생성과 연결은 사용자가 직접 함
+   - 코드 준비 완료: Postgres 전환, 첫 마이그레이션 `prisma/migrations/*_init`, `vercel-build`(마이그레이션 → 시드 → 빌드), 대화·완료 API `maxDuration = 60`
+   - 남은 일: 사용자가 Neon/Vercel 가입 후 환경 변수 입력 → 첫 배포 확인
+   - Resend 키는 사용자가 발급함. 클라우드 환경 변수 또는 Vercel 환경 변수로 받기로 함 (채팅에 붙여 넣지 않기)
    - 휴대폰에서 마이크를 쓰려면 HTTPS가 필요해서 배포(또는 터널)가 있어야 함
 3. main으로 합치는 PR (사용자가 요청하면)
 
@@ -35,6 +37,10 @@
 - 음성은 무료 브라우저 기능 유지. 사용자가 실제 기기에서 음성 테스트 예정 (결과 받으면 반영)
 
 ## 이 환경에서 알아둘 점
+
+- DB는 PostgreSQL. 컨테이너에 Postgres 16이 깔려 있음: `service postgresql start` 후 `postgres/postgres` 계정, DB `english_quest`, `english_quest_test` (세션마다 새로 만들어야 할 수 있음)
+- Prisma는 AI가 `migrate reset`을 실행하면 사용자 동의를 요구한다. 테스트 초기화는 `_test` DB만 스키마를 지우고 `migrate deploy` 하는 방식으로 대신함
+- `.claude/skills/neon-postgres`만 남김 (Neon 공식 스킬). 나머지 Neon 스킬은 기존 로그인·AI 구조와 겹쳐서 지움
 
 - API 키는 클라우드 환경 변수 `EQ_ANTHROPIC_API_KEY`로 들어와 있다. 앱은 `ANTHROPIC_API_KEY`를 읽으므로 실행할 때만 넘긴다:
   `env ANTHROPIC_API_KEY="$EQ_ANTHROPIC_API_KEY" npx next start -p 3100`
