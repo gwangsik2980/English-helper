@@ -59,7 +59,7 @@ export default async function ProgressPage() {
             aria-valuenow={pct}
             aria-label="다음 레벨까지 진행률"
           >
-            <div className="h-full rounded-full bg-accent-from" style={{ width: `${pct}%` }} />
+            <div className="h-full rounded-full bg-accent" style={{ width: `${pct}%` }} />
           </div>
           <p className="mt-3 text-xs tracking-wide text-white/50">
             {p.xp.xpForNext !== null ? `Lv.${p.xp.level + 1}까지 ${p.xp.xpForNext - p.xp.xpIntoLevel} XP` : "최고 레벨이에요"}
@@ -105,7 +105,7 @@ export default async function ProgressPage() {
                       key={k}
                       aria-hidden
                       className={`h-1.5 flex-1 rounded-full ${
-                        h.band === "proficient" ? "bg-ink" : h.band === "developing" ? "bg-ink/45" : "bg-ink/15"
+                        h.band === "proficient" ? "bg-accent" : h.band === "developing" ? "bg-accent/50" : "bg-white/15"
                       }`}
                     />
                   ))}

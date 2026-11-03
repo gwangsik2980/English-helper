@@ -18,7 +18,7 @@ export function TopNav() {
   const pathname = usePathname();
   return (
     <nav aria-label="주요 메뉴" className="hidden md:block">
-      <ul className="flex items-center gap-1 rounded-full border border-line/80 bg-white/60 p-1 backdrop-blur">
+      <ul className="glass-bar flex items-center gap-1 rounded-full p-1">
         {LINKS.map((l) => {
           const active = isActive(pathname, l.href);
           return (
@@ -26,8 +26,8 @@ export function TopNav() {
               <Link
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`block rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  active ? "bg-ink text-white" : "text-muted hover:text-text"
+                className={`block rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                  active ? "bg-accent text-accent-ink" : "text-muted hover:bg-accent hover:text-accent-ink"
                 }`}
               >
                 {l.label}
@@ -45,9 +45,9 @@ export function BottomNav() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed inset-x-3 bottom-3 z-20 rounded-full bg-ink p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] text-white shadow-lg md:hidden"
+      className="glass-bar fixed inset-x-3 bottom-3 z-20 rounded-full p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] md:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-4 gap-1">
         {LINKS.map((l) => {
           const active = isActive(pathname, l.href);
           return (
@@ -56,10 +56,10 @@ export function BottomNav() {
                 href={l.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex min-h-12 flex-col items-center justify-center rounded-full text-[11px] font-medium transition-colors ${
-                  active ? "bg-white/12 text-white" : "text-white/55"
+                  active ? "bg-accent text-accent-ink" : "text-white/65"
                 }`}
               >
-                <span aria-hidden className={`text-base leading-none ${active ? "text-accent-from" : ""}`}>
+                <span aria-hidden className="text-base leading-none">
                   {l.icon}
                 </span>
                 {l.label}

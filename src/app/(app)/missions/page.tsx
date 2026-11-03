@@ -52,7 +52,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Pro
             <label htmlFor="category" className="label">
               카테고리
             </label>
-            <select id="category" name="category" defaultValue={category ?? ""} className="input bg-white">
+            <select id="category" name="category" defaultValue={category ?? ""} className="input">
               <option value="">전체</option>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
@@ -65,7 +65,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Pro
             <label htmlFor="level" className="label">
               레벨
             </label>
-            <select id="level" name="level" defaultValue={level ? String(level) : ""} className="input bg-white">
+            <select id="level" name="level" defaultValue={level ? String(level) : ""} className="input">
               <option value="">전체</option>
               {LEVELS.map((l, i) => (
                 <option key={l} value={i + 1}>
@@ -82,7 +82,7 @@ export default async function MissionsPage({ searchParams }: { searchParams: Pro
               id="maxDuration"
               name="maxDuration"
               defaultValue={maxDuration ? String(maxDuration) : ""}
-              className="input bg-white"
+              className="input"
             >
               <option value="">전체</option>
               <option value="5">5분 이하</option>

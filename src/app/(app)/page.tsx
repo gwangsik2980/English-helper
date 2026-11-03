@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MissionMeta } from "@/features/missions/MissionCard";
 import { StartMissionButton } from "@/features/missions/StartMissionButton";
+import { FloatingBits } from "@/features/ui/FloatingBits";
 import { ArrowBadge, ArrowUpRight, LogoMark } from "@/features/ui/Icons";
 import { requirePageUser } from "@/server/http";
 import { getProfile } from "@/server/services/profile";
@@ -33,8 +34,15 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12 lg:space-y-16">
-      <section className="grid gap-8 lg:grid-cols-12 lg:items-end">
-        <div className="lg:col-span-7">
+      <section className="relative grid gap-8 lg:grid-cols-12 lg:items-end">
+        <FloatingBits
+          className="hidden lg:block"
+          bits={[
+            { text: "Could I get that to go?", top: "-6%", left: "62%", size: "sm" },
+            { text: "Thanks, have a good one!", top: "18%", left: "80%", size: "md", tone: "pink" },
+          ]}
+        />
+        <div className="relative lg:col-span-7">
           <p className="eyebrow reveal">{profile.displayName}님의 오늘</p>
           <h1 className="display reveal-lines mt-4 max-w-[16ch] text-4xl sm:text-5xl">
             <span className="line">
@@ -43,9 +51,14 @@ export default async function HomePage() {
             <span className="line">
               <span>연습해 볼까요?</span>
             </span>
+            <span className="line">
+              <span lang="en" className="script text-[1.3em] text-accent">
+                let&apos;s talk.
+              </span>
+            </span>
           </h1>
         </div>
-        <dl className="reveal grid grid-cols-3 gap-2 lg:col-span-5" style={d(300)}>
+        <dl className="reveal relative grid grid-cols-3 gap-2 lg:col-span-5" style={d(300)}>
           {[
             ["레벨", `Lv.${xp.level}`],
             ["이번 주", `${activity.completedThisWeek}회`],

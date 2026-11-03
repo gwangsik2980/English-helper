@@ -1,34 +1,41 @@
 @import "tailwindcss";
 
 /*
- * Design language adapted from the "Lumora" reference: near-white surfaces,
- * near-black ink cards, one burnt-orange accent, pill controls.
- * Light palette only. Secondary text is darker than the reference's #8d8d8d
- * so small Korean text keeps WCAG AA contrast on white.
+ * Structure, spacing and motion follow the "Lumora" reference (pill controls
+ * with arrow badges, eyebrows, line reveals, hover-fill rows, stats panel).
+ * Mood follows the "Soda" reference: deep teal radial gradient, frosted
+ * glass instead of solid ink, white type, one pink accent (#fbcfe8), cursive
+ * accent words and rising bubbles. Dark only.
  */
 :root {
-  --bg: #ffffff;
-  --text: #111111;
-  --ink: #0a0a0a;
-  --muted: #6b6b6b; /* ≈ rgba(17,17,17,.62) */
-  --subtle: #8d8d8d;
-  --line: #e6e5e2;
-  --surface: #f1f0ee;
-  --surface-2: #e3e2df;
-  --accent: #b15f2c;
-  --accent-from: #cf8047;
-  --accent-to: #97501f;
-  --accent-soft: #f6ece4;
-  --ok: #2f6b45;
-  --ok-soft: #e7f0e9;
-  --warn: #8a5a12;
-  --warn-soft: #f7efe0;
-  --bad: #a3322a;
-  --bad-soft: #f8e7e5;
+  --bg-inner: #0b8a78;
+  --bg-mid: #044e3b;
+  --bg-outer: #011411;
+  --bg: #011411;
+  --text: #ffffff;
+  --ink: rgb(0 0 0 / 0.5); /* dark glass pill */
+  --muted: rgb(255 255 255 / 0.72);
+  --subtle: rgb(255 255 255 / 0.5);
+  --line: rgb(255 255 255 / 0.12);
+  --surface: rgb(255 255 255 / 0.06);
+  --surface-2: rgb(255 255 255 / 0.12);
+  --accent: #fbcfe8;
+  --accent-ink: #011d17;
+  --accent-from: #fbcfe8;
+  --accent-to: #f9a8d4;
+  --accent-soft: rgb(251 207 232 / 0.12);
+  --ok: #86efac;
+  --ok-soft: rgb(134 239 172 / 0.14);
+  --warn: #fcd34d;
+  --warn-soft: rgb(252 211 77 / 0.14);
+  --bad: #fca5a5;
+  --bad-soft: rgb(252 165 165 / 0.14);
 
-  --ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-reveal: cubic-bezier(0.215, 0.61, 0.355, 1);
+  color-scheme: dark;
 }
+
 
 @theme inline {
   --color-bg: var(--bg);
@@ -40,6 +47,7 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-from: var(--accent-from);
   --color-accent-to: var(--accent-to);
   --color-accent-soft: var(--accent-soft);
@@ -52,9 +60,10 @@
   --radius-card: 2rem;
   --radius-card-sm: 1.25rem;
   --radius-control: 0.875rem;
-  /* Onest has no Hangul, so Korean falls through to a Korean system font. */
+  /* Latin fonts have no Hangul, so Korean falls through to a Korean system font. */
   --font-sans: var(--font-onest), "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui,
     sans-serif;
+  --font-script: var(--font-galada), cursive;
 }
 
 html {
@@ -63,6 +72,7 @@ html {
 }
 
 body {
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
@@ -73,6 +83,41 @@ body {
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* Fixed radial gradient behind everything (works with page scroll). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(circle at center, var(--bg-inner) 0%, var(--bg-mid) 50%, var(--bg-outer) 100%);
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: var(--o, 0.4);
+  }
+  100% {
+    transform: translateY(-110vh) translateX(30px);
+    opacity: 0;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
 }
 
 /* ---------- Entrance reveal (once, CSS only) ---------- */
@@ -121,28 +166,56 @@ body {
   }
 }
 
-/* ---------- Surfaces ---------- */
+/* ---------- Surfaces (frosted glass) ---------- */
 @utility card {
   border-radius: var(--radius-card-sm);
   border: 1px solid var(--line);
-  background: var(--bg);
+  background: rgb(255 255 255 / 0.05);
   padding: 1.25rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 @utility card-soft {
   border-radius: var(--radius-card-sm);
-  background: var(--surface);
+  background: rgb(255 255 255 / 0.07);
   padding: 1.25rem;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
+/* Deeper glass for hero/feature panels. */
 @utility card-ink {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-card);
-  background: var(--ink);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background: rgb(0 0 0 / 0.28);
   color: #fff;
   padding: 1.5rem;
-  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.05);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 0.18),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@utility glass-bar {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(255 255 255 / 0.08);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 0.1),
+    inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Big cursive display word (Latin only; Galada has no Hangul). */
+@utility script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  line-height: 0.85;
+  letter-spacing: normal;
 }
 
 /* ---------- Pill buttons ---------- */
@@ -159,7 +232,7 @@ body {
   line-height: 1.2;
   white-space: nowrap;
   transition:
-    transform 0.35s var(--ease-spring),
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
     background-color 0.2s,
     border-color 0.2s,
     color 0.2s;
@@ -176,21 +249,33 @@ body {
 
 @utility btn-primary {
   @apply btn;
-  background: var(--ink);
+  background: rgb(0 0 0 / 0.5);
   color: #fff;
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: rgb(0 0 0 / 0.7);
+    }
+  }
 }
 
 @utility btn-secondary {
   @apply btn;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--text);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(255 255 255 / 0.05);
+  color: #fff;
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: rgb(255 255 255 / 0.12);
+      border-color: rgb(255 255 255 / 0.4);
+    }
+  }
 }
 
+/* Pink pill (reference: active nav item). */
 @utility btn-light {
   @apply btn;
-  background: var(--surface);
-  color: var(--text);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 @utility btn-ghost {
@@ -199,8 +284,8 @@ body {
   @media (hover: hover) {
     &:hover:not(:disabled) {
       transform: none;
-      background: var(--surface);
-      color: var(--text);
+      background: rgb(255 255 255 / 0.08);
+      color: #fff;
     }
   }
 }
@@ -216,7 +301,7 @@ body {
   }
 }
 
-/* Pill with a round arrow badge on the right (Lumora "withArrow"). */
+/* Pill with a round pink badge on the right (reference "Shop Now +"). */
 @utility btn-arrow {
   padding: 0.375rem 0.375rem 0.375rem 1.5rem;
 }
@@ -229,12 +314,13 @@ body {
   place-items: center;
   border-radius: 9999px;
   font-size: 1rem;
-  background: var(--ink);
-  color: #fff;
-  transition: transform 0.35s var(--ease-spring);
-  .btn-primary > & {
-    background: #fff;
-    color: var(--ink);
+  background: var(--accent);
+  color: var(--accent-ink);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* On a pink pill, flip to a dark badge so it stays visible. */
+  .btn-light > & {
+    background: rgb(0 0 0 / 0.55);
+    color: #fff;
   }
 }
 
@@ -273,21 +359,25 @@ body {
   min-height: 2.75rem;
   width: 100%;
   border-radius: var(--radius-control);
-  border: 1px solid var(--line);
-  background: rgb(241 240 238 / 0.5);
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: rgb(255 255 255 / 0.07);
   padding: 0.75rem 1rem;
   font-size: 15px; /* ≥15px keeps iOS from zooming on focus */
-  color: var(--text);
+  color: #fff;
   outline: none;
   transition:
     border-color 0.2s,
     background-color 0.2s;
   &::placeholder {
-    color: var(--subtle);
+    color: rgb(255 255 255 / 0.45);
   }
   &:focus {
-    border-color: rgb(17 17 17 / 0.3);
-    background: #fff;
+    border-color: var(--accent);
+    background: rgb(255 255 255 / 0.1);
+  }
+  & option {
+    background: #04294e;
+    color: #fff;
   }
 }
 
@@ -298,7 +388,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.025em;
   text-transform: uppercase;
-  color: rgb(17 17 17 / 0.55);
+  color: rgb(255 255 255 / 0.65);
 }
 
 /* ---------- Small labels ---------- */
@@ -308,29 +398,22 @@ body {
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: rgb(17 17 17 / 0.7);
+  color: rgb(255 255 255 / 0.72);
   &::before {
     content: "";
     width: 0.375rem;
     height: 0.375rem;
     border-radius: 9999px;
-    background: rgb(17 17 17 / 0.5);
+    background: var(--accent);
   }
 }
 
 @utility eyebrow-light {
   @apply eyebrow;
-  color: rgb(255 255 255 / 0.7);
-  &::before {
-    background: rgb(255 255 255 / 0.6);
-  }
 }
 
 @utility eyebrow-accent {
   @apply eyebrow;
-  &::before {
-    background: var(--accent);
-  }
 }
 
 @utility chip {
@@ -338,11 +421,12 @@ body {
   align-items: center;
   gap: 0.25rem;
   border-radius: 9999px;
-  background: var(--surface);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.06);
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
   font-weight: 500;
-  color: rgb(17 17 17 / 0.7);
+  color: rgb(255 255 255 / 0.8);
 }
 
 @utility tag-chip {
@@ -374,4 +458,51 @@ body {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ---------- Bubbles ---------- */
+.bubbles {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bubble {
+  position: absolute;
+  bottom: -50px;
+  border-radius: 9999px;
+  opacity: 0;
+  background: radial-gradient(circle at 30% 30%, rgb(255 255 255 / 0.9) 0 12%, rgb(255 255 255 / 0.12) 30%, rgb(255 255 255 / 0.04) 62%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.45),
+    inset -2px -3px 6px rgb(255 255 255 / 0.15);
+}
+
+/* Registered so the gradient stops can transition between moods. */
+@property --bg-inner {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0b8a78;
+}
+@property --bg-mid {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #044e3b;
+}
+@property --bg-outer {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #011411;
+}
+body {
+  transition:
+    --bg-inner 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+    --bg-mid 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+    --bg-outer 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body.theme-blue {
+  --bg-inner: #0b4f8a;
+  --bg-mid: #04294e;
+  --bg-outer: #010c14;
 }

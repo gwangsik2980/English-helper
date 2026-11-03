@@ -95,7 +95,7 @@ export function ProfileForm({
                 key={g}
                 aria-pressed={on}
                 onClick={() => toggleGoal(g)}
-                className={`btn ${on ? "bg-ink text-white" : "border border-line bg-white text-text"}`}
+                className={`btn ${on ? "bg-accent text-accent-ink" : "border border-line bg-surface text-white"}`}
               >
                 {on ? "✓ " : ""}
                 {GOAL_LABEL_KO[g]}
@@ -111,7 +111,7 @@ export function ProfileForm({
           {LEVELS.map((l) => (
             <label
               key={l}
-              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.level === l ? "border-ink bg-surface ring-1 ring-ink" : "border-line bg-white hover:bg-surface/50"}`}
+              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.level === l ? "border-accent bg-accent-soft ring-1 ring-accent" : "border-line bg-surface hover:bg-surface-2"}`}
             >
               <input
                 type="radio"
@@ -141,7 +141,7 @@ export function ProfileForm({
           {CORRECTION_MODES.map((m) => (
             <label
               key={m}
-              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.correctionMode === m ? "border-ink bg-surface ring-1 ring-ink" : "border-line bg-white hover:bg-surface/50"}`}
+              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.correctionMode === m ? "border-accent bg-accent-soft ring-1 ring-accent" : "border-line bg-surface hover:bg-surface-2"}`}
             >
               <input
                 type="radio"
@@ -178,7 +178,7 @@ export function ProfileForm({
             setForm({ ...form, dailyMinutes: Number(e.target.value) });
             setStatus("idle");
           }}
-          className="w-full accent-[var(--brand)]"
+          className="w-full accent-[var(--accent)]"
         />
       </div>
 

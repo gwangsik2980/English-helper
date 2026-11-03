@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Onest } from "next/font/google";
+import { Galada, Onest } from "next/font/google";
 import type { ReactNode } from "react";
+import { Bubbles } from "@/features/ui/Bubbles";
 import "./globals.css";
 
+// Onest carries the Lumora-style structure; Galada is the Soda-style accent script.
 const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-onest" });
+const galada = Galada({ subsets: ["latin"], weight: "400", variable: "--font-galada" });
 
 export const metadata: Metadata = {
   title: "ENGLISH QUEST",
@@ -13,15 +16,18 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a0a0a",
+  themeColor: "#011411",
   // Lets the chat input stay above the mobile keyboard.
   interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" className={`${onest.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+    <html lang="ko" className={`${onest.variable} ${galada.variable} h-full`}>
+      <body className="min-h-full">
+        <Bubbles />
+        {children}
+      </body>
     </html>
   );
 }

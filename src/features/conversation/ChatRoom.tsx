@@ -45,6 +45,12 @@ export function ChatRoom(props: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Conversation uses the blue mood; the gradient morphs in and back out.
+  useEffect(() => {
+    document.body.classList.add("theme-blue");
+    return () => document.body.classList.remove("theme-blue");
+  }, []);
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [turns, pending]);
@@ -101,8 +107,8 @@ export function ChatRoom(props: Props) {
   const userTurnCount = turns.filter((t) => t.speaker === "user").length;
 
   return (
-    <div className="flex h-dvh flex-col bg-bg">
-      <header className="border-b border-line/70 bg-white/90 backdrop-blur">
+    <div className="flex h-dvh flex-col">
+      <header className="border-b border-white/10 bg-[rgb(1_12_20/0.45)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
           <Link href="/" className="btn-ghost px-2" aria-label="홈으로 나가기 (대화는 저장돼요)">
             ←
@@ -186,8 +192,8 @@ export function ChatRoom(props: Props) {
                 lang="en"
                 className={`max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] px-4 py-3 text-[15px] leading-relaxed ${
                   t.speaker === "user"
-                    ? "rounded-br-md bg-ink text-white"
-                    : "rounded-bl-md bg-surface"
+                    ? "rounded-br-md bg-accent text-accent-ink"
+                    : "glass-bar rounded-bl-md"
                 }`}
               >
                 {t.text}
@@ -206,7 +212,7 @@ export function ChatRoom(props: Props) {
           ))}
           {pending && (
             <li className="flex flex-col items-end">
-              <p lang="en" className="max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] rounded-br-md bg-ink/60 px-4 py-2.5 text-[15px] text-white">
+              <p lang="en" className="max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] rounded-br-md bg-accent/60 px-4 py-2.5 text-[15px] text-accent-ink">
                 {pending.text}
               </p>
               {pending.state === "sending" ? (
@@ -253,7 +259,7 @@ export function ChatRoom(props: Props) {
       </div>
 
       {confirmEnd && (
-        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-line bg-white">
+        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-white/10 bg-[rgb(1_12_20/0.6)] backdrop-blur-xl">
           <div className="mx-auto max-w-3xl space-y-2 px-3 py-3">
             <p id="end-title" className="font-semibold">
               대화를 끝낼까요?
@@ -287,7 +293,7 @@ export function ChatRoom(props: Props) {
 
       <form
         onSubmit={onSubmit}
-        className="border-t border-line bg-white pb-[env(safe-area-inset-bottom)]"
+        className="border-t border-white/10 bg-[rgb(1_12_20/0.45)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
         aria-label="메시지 보내기"
       >
         <div className="mx-auto flex max-w-3xl items-end gap-2 px-3 py-2">
@@ -311,7 +317,7 @@ export function ChatRoom(props: Props) {
           />
           <button
             type="submit"
-            className="btn-primary h-11 w-11 shrink-0 p-0"
+            className="btn-light h-11 w-11 shrink-0 p-0"
             aria-label="보내기"
             disabled={!draft.trim() || Boolean(pending) || ending === "working"}
           >
