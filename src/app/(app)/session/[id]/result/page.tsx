@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ReportFeedback } from "@/features/progress/ReportFeedback";
 import { SaveReviewButton } from "@/features/progress/SaveReviewButton";
 import { StartMissionButton } from "@/features/missions/StartMissionButton";
+import { CountUp } from "@/features/ui/CountUp";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/errors";
 import { requirePageUser } from "@/server/http";
@@ -19,7 +20,7 @@ const STATUS_UI: Record<GoalStatus, { icon: string; label: string; cls: string }
   met: { icon: "✓", label: "달성", cls: "bg-ok-soft text-ok" },
   partial: { icon: "◐", label: "일부 달성", cls: "bg-warn-soft text-warn" },
   not_met: { icon: "○", label: "미달성", cls: "bg-bad-soft text-bad" },
-  undetermined: { icon: "?", label: "판단 보류", cls: "bg-surface-2 text-muted" },
+  undetermined: { icon: "?", label: "판단 보류", cls: "bg-surface text-muted" },
 };
 
 export default async function ResultPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,30 +46,34 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
       : null;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
-      <header>
-        <p className="text-sm font-semibold text-muted">미션 결과</p>
-        <h1 className="text-2xl font-bold">{mission.title}</h1>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <header className="mb-8">
+        <p className="eyebrow reveal">미션 결과</p>
+        <h1 className="display reveal-lines mt-4 text-4xl sm:text-5xl">
+          <span className="line">
+            <span>{mission.title}</span>
+          </span>
+        </h1>
       </header>
 
       {view.status === "unavailable" ? (
-        <section role="status" className="card border-warn bg-warn-soft">
+        <section role="status" className="reveal rounded-[1.25rem] bg-warn-soft p-5">
           <h2 className="font-bold text-warn">피드백을 만들지 못했어요</h2>
           <p className="mt-1">{view.messageKo}</p>
         </section>
       ) : (
         <>
-          <section className="card">
-            <h2 className="mb-1 font-bold">한 줄 요약</h2>
-            <p>{view.feedback.summary_ko}</p>
+          <section className="reveal">
+            <h2 className="sr-only">한 줄 요약</h2>
+            <p className="text-2xl font-medium leading-snug tracking-tight sm:text-3xl">{view.feedback.summary_ko}</p>
             {view.feedback.insufficient_data && (
-              <p className="mt-3 rounded-lg bg-surface-2 px-3 py-2 text-sm text-muted">
+              <p className="mt-4 rounded-[0.875rem] bg-surface px-4 py-3 text-sm text-muted">
                 주고받은 말이 적어서 목표 판정과 역량 평가는 보류했어요. 적은 발화로 실력을 단정하지 않기 위해서예요.
               </p>
             )}
           </section>
 
-          <section className="card">
+          <section className="card reveal sm:p-6">
             <h2 className="section-title">상황 목표</h2>
             <ul className="space-y-3">
               {view.feedback.goal_outcomes.map((g) => {
@@ -77,7 +82,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
                 return (
                   <li key={g.goal_id} className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${ui.cls}`}>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${ui.cls}`}>
                         <span aria-hidden>{ui.icon} </span>
                         {ui.label}
                       </span>
@@ -85,7 +90,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
                     </div>
                     <p className="text-sm text-muted">{g.reason_ko}</p>
                     {g.evidence_turn_ids.slice(0, 1).map((tid) => (
-                      <blockquote key={tid} lang="en" className="border-l-4 border-border pl-3 text-sm">
+                      <blockquote key={tid} lang="en" className="rounded-[0.875rem] bg-surface px-3 py-2 text-sm">
                         &ldquo;{turnText.get(tid)}&rdquo;
                       </blockquote>
                     ))}
@@ -95,7 +100,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             </ul>
           </section>
 
-          <section className="card">
+          <section className="card reveal sm:p-6">
             <h2 className="section-title">잘한 점</h2>
             {view.feedback.strengths.length === 0 ? (
               <p className="text-sm text-muted">이번 대화에서는 근거로 보여 줄 만한 문장을 고르지 못했어요.</p>
@@ -113,7 +118,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
             )}
           </section>
 
-          <section className="card">
+          <section className="card reveal sm:p-6">
             <h2 className="section-title">이렇게 말하면 더 자연스러워요</h2>
             {view.feedback.improvements.length === 0 ? (
               <p className="text-sm text-muted">특별히 고칠 표현을 찾지 못했어요.</p>
@@ -139,7 +144,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           </section>
 
           {view.feedback.skill_observations.length > 0 && (
-            <section className="card">
+            <section className="card reveal sm:p-6">
               <h2 className="section-title">이번 대화에서 관찰한 역량</h2>
               <ul className="space-y-1.5 text-sm">
                 {view.feedback.skill_observations.map((o) => (
@@ -159,16 +164,20 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
         </>
       )}
 
-      <section className="card">
-        <h2 className="section-title">획득 경험치 +{xpTotal} XP</h2>
+      <section className="card-ink reveal sm:p-10" style={{ ["--rise" as string]: "40px" }}>
+        <h2 className="eyebrow-light">획득 경험치</h2>
+        <p className="mt-4 text-6xl font-semibold tracking-tight sm:text-7xl">
+          +<CountUp value={xpTotal} />
+          <span className="ml-2 text-xl font-medium text-white/50">XP</span>
+        </p>
         {xp.length === 0 ? (
-          <p className="text-sm text-muted">이번 대화에서는 경험치가 없어요. 한 마디 이상 대화하면 완료 경험치를 받아요.</p>
+          <p className="mt-4 text-sm text-white/60">이번 대화에서는 경험치가 없어요. 한 마디 이상 대화하면 완료 경험치를 받아요.</p>
         ) : (
-          <ul className="space-y-1 text-sm">
+          <ul className="mt-6 space-y-2 border-t border-white/10 pt-5 text-sm">
             {xp.map((e, idx) => (
-              <li key={idx} className="flex justify-between gap-3">
+              <li key={idx} className="flex justify-between gap-3 text-white/70">
                 <span>{e.reason}</span>
-                <span className="shrink-0 font-semibold">+{e.amount}</span>
+                <span className="shrink-0 font-semibold text-white">+{e.amount}</span>
               </li>
             ))}
           </ul>
@@ -177,24 +186,24 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
       <section className="space-y-3">
         {next && view.status === "ok" && view.feedback.next_practice && (
-          <div className="card bg-brand-soft">
-            <p className="text-sm font-semibold text-brand">다음 연습 추천</p>
-            <p className="mt-1 font-bold">{next.title}</p>
-            <p className="text-sm">{view.feedback.next_practice.reason_ko}</p>
-            <div className="mt-3">
+          <div className="card-soft sm:p-6">
+            <p className="eyebrow-accent">다음 연습 추천</p>
+            <p className="mt-3 text-2xl font-medium tracking-tight">{next.title}</p>
+            <p className="mt-1 text-sm text-muted">{view.feedback.next_practice.reason_ko}</p>
+            <div className="mt-4">
               <StartMissionButton missionId={next.id} label="이 미션 시작" />
             </div>
           </div>
         )}
         <div className="flex flex-wrap gap-2">
-          <StartMissionButton missionId={mission.id} label="같은 미션 다시 하기" className="btn-secondary" />
+          <StartMissionButton missionId={mission.id} label="같은 미션 다시 하기" className="btn-secondary" arrow={false} />
           <Link href="/" className="btn-ghost">
             홈으로
           </Link>
         </div>
       </section>
 
-      <details className="card">
+      <details className="card sm:p-6">
         <summary className="cursor-pointer font-semibold">대화 다시 보기</summary>
         <ol className="mt-3 space-y-2 text-sm" lang="en">
           {session.turns.map((t) => (

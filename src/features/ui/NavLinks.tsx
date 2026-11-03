@@ -17,20 +17,25 @@ function isActive(pathname: string, href: string) {
 export function TopNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="주요 메뉴" className="hidden gap-1 md:flex">
-      {LINKS.map((l) => {
-        const active = isActive(pathname, l.href);
-        return (
-          <Link
-            key={l.href}
-            href={l.href}
-            aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-3 py-2 text-sm font-semibold ${active ? "bg-brand-soft text-brand" : "text-muted hover:text-text"}`}
-          >
-            {l.label}
-          </Link>
-        );
-      })}
+    <nav aria-label="주요 메뉴" className="hidden md:block">
+      <ul className="flex items-center gap-1 rounded-full border border-line/80 bg-white/60 p-1 backdrop-blur">
+        {LINKS.map((l) => {
+          const active = isActive(pathname, l.href);
+          return (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                aria-current={active ? "page" : undefined}
+                className={`block rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  active ? "bg-ink text-white" : "text-muted hover:text-text"
+                }`}
+              >
+                {l.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }
@@ -40,7 +45,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="주요 메뉴"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-3 bottom-3 z-20 rounded-full bg-ink p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] text-white shadow-lg md:hidden"
     >
       <ul className="grid grid-cols-4">
         {LINKS.map((l) => {
@@ -50,9 +55,11 @@ export function BottomNav() {
               <Link
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center text-xs font-semibold ${active ? "text-brand" : "text-muted"}`}
+                className={`flex min-h-12 flex-col items-center justify-center rounded-full text-[11px] font-medium transition-colors ${
+                  active ? "bg-white/12 text-white" : "text-white/55"
+                }`}
               >
-                <span aria-hidden className="text-lg leading-none">
+                <span aria-hidden className={`text-base leading-none ${active ? "text-accent-from" : ""}`}>
                   {l.icon}
                 </span>
                 {l.label}

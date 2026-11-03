@@ -2,16 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowBadge } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 
 export function StartMissionButton({
   missionId,
   label = "미션 시작",
   className = "btn-primary",
+  arrow = true,
 }: {
   missionId: string;
   label?: string;
   className?: string;
+  arrow?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -31,8 +34,14 @@ export function StartMissionButton({
 
   return (
     <div>
-      <button type="button" onClick={start} disabled={busy} className={className}>
+      <button
+        type="button"
+        onClick={start}
+        disabled={busy}
+        className={`${className} ${arrow ? "btn-arrow nudge-group" : ""}`}
+      >
         {busy ? "준비하는 중…" : label}
+        {arrow && <ArrowBadge />}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-bad">

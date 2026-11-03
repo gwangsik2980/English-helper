@@ -37,7 +37,7 @@ export function ReviewList({ initial }: { initial: Item[] }) {
   return (
     <div className="space-y-2">
       {error && (
-        <p role="alert" className="rounded-xl bg-bad-soft px-3 py-2 text-sm text-bad">
+        <p role="alert" className="rounded-[0.875rem] bg-bad-soft px-3 py-2 text-sm text-bad">
           {error}
         </p>
       )}
@@ -45,7 +45,7 @@ export function ReviewList({ initial }: { initial: Item[] }) {
         {items.map((i) => {
           const shown = revealed.has(i.id) || i.status === "done";
           return (
-            <li key={i.id} className="card space-y-2 p-4">
+            <li key={i.id} className="card-soft space-y-2 p-5">
               <p className="text-xs font-semibold text-muted">내가 했던 말</p>
               <p lang="en">{i.phrase}</p>
               {shown ? (

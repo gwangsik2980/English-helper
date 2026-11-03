@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowBadge } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 import {
   CORRECTION_LABEL_KO,
@@ -94,7 +95,7 @@ export function ProfileForm({
                 key={g}
                 aria-pressed={on}
                 onClick={() => toggleGoal(g)}
-                className={`btn ${on ? "bg-brand text-brand-ink" : "border border-border bg-surface"}`}
+                className={`btn ${on ? "bg-ink text-white" : "border border-line bg-white text-text"}`}
               >
                 {on ? "✓ " : ""}
                 {GOAL_LABEL_KO[g]}
@@ -110,7 +111,7 @@ export function ProfileForm({
           {LEVELS.map((l) => (
             <label
               key={l}
-              className={`cursor-pointer rounded-xl border p-3 ${form.level === l ? "border-brand bg-brand-soft" : "border-border bg-surface"}`}
+              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.level === l ? "border-ink bg-surface ring-1 ring-ink" : "border-line bg-white hover:bg-surface/50"}`}
             >
               <input
                 type="radio"
@@ -140,7 +141,7 @@ export function ProfileForm({
           {CORRECTION_MODES.map((m) => (
             <label
               key={m}
-              className={`cursor-pointer rounded-xl border p-3 ${form.correctionMode === m ? "border-brand bg-brand-soft" : "border-border bg-surface"}`}
+              className={`cursor-pointer rounded-[1.25rem] border p-4 transition-colors ${form.correctionMode === m ? "border-ink bg-surface ring-1 ring-ink" : "border-line bg-white hover:bg-surface/50"}`}
             >
               <input
                 type="radio"
@@ -182,13 +183,18 @@ export function ProfileForm({
       </div>
 
       {error && (
-        <p role="alert" className="rounded-xl bg-bad-soft px-3 py-2 text-sm text-bad">
+        <p role="alert" className="rounded-[0.875rem] bg-bad-soft px-3 py-2 text-sm text-bad">
           {error}
         </p>
       )}
       <div className="flex items-center gap-3">
-        <button type="submit" className="btn-primary" disabled={status === "saving" || form.goals.length === 0}>
+        <button
+          type="submit"
+          className="btn-primary btn-arrow nudge-group"
+          disabled={status === "saving" || form.goals.length === 0}
+        >
           {status === "saving" ? "저장하는 중…" : submitLabel}
+          <ArrowBadge />
         </button>
         <span role="status" className="text-sm text-muted">
           {status === "saved" && !redirectTo ? "✓ 저장됐어요" : form.goals.length === 0 ? "목표를 하나 이상 골라 주세요" : ""}

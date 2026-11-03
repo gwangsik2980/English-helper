@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowBadge } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
@@ -28,7 +29,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   const isSignup = mode === "signup";
   return (
-    <form onSubmit={onSubmit} className="card space-y-4" noValidate>
+    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <div className="reveal mb-8">
+        <p className="eyebrow-accent">{isSignup ? "처음 시작하기" : "다시 오셨네요"}</p>
+        <h2 className="display mt-2 text-3xl">{isSignup ? "계정 만들기" : "로그인"}</h2>
+      </div>
       <div>
         <label htmlFor="email" className="label">
           이메일
@@ -65,16 +70,17 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         )}
       </div>
       {error && (
-        <p role="alert" className="rounded-xl bg-bad-soft px-3 py-2 text-sm text-bad">
+        <p role="alert" className="rounded-[0.875rem] bg-bad-soft px-3 py-2 text-sm text-bad">
           {error}
         </p>
       )}
-      <button type="submit" className="btn-primary w-full" disabled={busy}>
+      <button type="submit" className="btn-primary btn-arrow nudge-group w-full justify-between" disabled={busy}>
         {busy ? "잠시만요…" : isSignup ? "가입하고 시작하기" : "로그인"}
+        <ArrowBadge />
       </button>
       <p className="text-center text-sm text-muted">
         {isSignup ? "이미 계정이 있나요? " : "처음이신가요? "}
-        <Link href={isSignup ? "/login" : "/signup"} className="font-semibold text-brand underline-offset-2 hover:underline">
+        <Link href={isSignup ? "/login" : "/signup"} className="font-semibold text-accent underline-offset-2 hover:underline">
           {isSignup ? "로그인" : "회원가입"}
         </Link>
       </p>

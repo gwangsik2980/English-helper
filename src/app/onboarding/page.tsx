@@ -1,4 +1,5 @@
 import { ProfileForm } from "@/features/profile/ProfileForm";
+import { LogoMark } from "@/features/ui/Icons";
 import { requirePageUser } from "@/server/http";
 import { getProfile } from "@/server/services/profile";
 
@@ -9,12 +10,24 @@ export default async function OnboardingPage() {
   const profile = await getProfile(userId);
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <p className="text-sm font-bold tracking-widest text-brand">ENGLISH QUEST</p>
-      <h1 className="mt-2 text-2xl font-bold">어떤 영어를 연습하고 싶은지 알려 주세요</h1>
-      <p className="mt-2 text-muted">1분이면 끝나요. 모든 항목은 나중에 설정에서 바꿀 수 있어요.</p>
+    <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 lg:py-16">
+      <p className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+        <LogoMark className="text-[1.25rem] text-accent" /> ENGLISH QUEST
+      </p>
+      <p className="eyebrow reveal mt-12">시작 설정</p>
+      <h1 className="display reveal-lines mt-4 max-w-[16ch] text-4xl sm:text-5xl">
+        <span className="line">
+          <span>어떤 영어를</span>
+        </span>
+        <span className="line">
+          <span>연습하고 싶나요?</span>
+        </span>
+      </h1>
+      <p className="reveal mt-4 text-muted" style={{ ["--delay" as string]: "250ms" }}>
+        1분이면 끝나요. 모든 항목은 나중에 설정에서 바꿀 수 있어요.
+      </p>
 
-      <section className="card mt-6">
+      <section className="card reveal mt-10 sm:p-8" style={{ ["--delay" as string]: "350ms" }}>
         <ProfileForm
           initial={{
             displayName: profile.displayName,
@@ -28,7 +41,7 @@ export default async function OnboardingPage() {
         />
       </section>
 
-      <section className="mt-6 rounded-2xl bg-surface-2 p-5 text-sm leading-relaxed text-muted">
+      <section className="card-soft mt-4 text-sm leading-relaxed text-muted">
         <h2 className="mb-1 font-semibold text-text">학습 데이터는 이렇게 다뤄요</h2>
         <p>
           대화 텍스트는 피드백과 성장 기록을 만드는 데 쓰여요. 지금 버전은 텍스트 대화만 지원하고, 음성 기능이 추가되면 마이크

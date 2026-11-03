@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Onest } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
+
+const onest = Onest({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-onest" });
 
 export const metadata: Metadata = {
   title: "ENGLISH QUEST",
@@ -10,13 +13,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#0a0a0a",
   // Lets the chat input stay above the mobile keyboard.
   interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko" className="h-full antialiased">
+    <html lang="ko" className={`${onest.variable} h-full`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

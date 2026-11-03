@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LogoMark } from "@/features/ui/Icons";
 import { BottomNav, TopNav } from "@/features/ui/NavLinks";
 import { aiMode } from "@/server/ai";
 import { requirePageUser } from "@/server/http";
@@ -12,24 +13,33 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   if (!profile.onboarded) redirect("/onboarding");
 
   return (
-    <div className="min-h-dvh pb-20 md:pb-0">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-surface focus:p-2">
+    <div className="min-h-dvh pb-24 md:pb-0">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-60 focus:rounded-[0.875rem] focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+      >
         본문으로 건너뛰기
       </a>
-      <header className="sticky top-0 z-10 border-b border-border bg-surface/95 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link href="/" className="text-sm font-extrabold tracking-widest text-brand">
-            ENGLISH QUEST
+      <header className="sticky top-0 z-10 border-b border-line/70 bg-white/85 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[88rem] items-center justify-between gap-4 px-5 sm:px-8">
+          <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <LogoMark className="text-[1.25rem] text-accent" />
+            <span>ENGLISH QUEST</span>
           </Link>
           <TopNav />
+          {aiMode() === "demo" && (
+            <span className="chip hidden lg:inline-flex" title="AI 키가 없어 정해진 대사와 규칙 기반 피드백으로 동작해요">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warn" /> 데모 모드
+            </span>
+          )}
         </div>
       </header>
       {aiMode() === "demo" && (
-        <div className="border-b border-border bg-warn-soft px-4 py-2 text-center text-xs text-warn">
+        <p className="bg-warn-soft px-5 py-2 text-center text-xs text-warn lg:hidden">
           데모 모드예요. AI 키가 연결되지 않아 정해진 대사와 규칙 기반 피드백으로 동작해요.
-        </div>
+        </p>
       )}
-      <main id="main" className="mx-auto w-full max-w-5xl px-4 py-6">
+      <main id="main" className="mx-auto w-full max-w-[88rem] px-5 py-8 sm:px-8 lg:py-12">
         {children}
       </main>
       <BottomNav />

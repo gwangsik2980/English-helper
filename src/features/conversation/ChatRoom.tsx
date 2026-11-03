@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ArrowRight, LogoMark } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 import { MAX_TURN_CHARS } from "@/shared/schemas/domain";
 
@@ -101,18 +102,19 @@ export function ChatRoom(props: Props) {
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
-      <header className="border-b border-border bg-surface">
+      <header className="border-b border-line/70 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
           <Link href="/" className="btn-ghost px-2" aria-label="홈으로 나가기 (대화는 저장돼요)">
             ←
           </Link>
+          <LogoMark aria-hidden className="shrink-0 text-[1.1rem] text-accent" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] font-bold">{props.missionTitle}</h1>
+            <h1 className="truncate text-[15px] font-semibold tracking-tight">{props.missionTitle}</h1>
             <p className="truncate text-xs text-muted">
               상대: <span lang="en">{props.aiRole}</span>
             </p>
           </div>
-          <button type="button" className="btn-danger min-h-9 px-3 text-sm" onClick={() => setConfirmEnd(true)}>
+          <button type="button" className="btn-secondary min-h-9 px-4 text-xs font-medium uppercase tracking-wide" onClick={() => setConfirmEnd(true)}>
             끝내기
           </button>
         </div>
@@ -141,7 +143,7 @@ export function ChatRoom(props: Props) {
         </div>
         {panel !== "none" && (
           <div id="chat-panel" className="mx-auto max-w-3xl px-3 pb-3">
-            <div className="rounded-xl bg-surface-2 p-3 text-sm">
+            <div className="rounded-[1.25rem] bg-surface p-4 text-sm">
               {panel === "goals" ? (
                 <ol className="list-decimal space-y-1 pl-5">
                   {props.goals.map((g) => (
@@ -176,23 +178,23 @@ export function ChatRoom(props: Props) {
       </header>
 
       <div ref={listRef} className="flex-1 overflow-y-auto" aria-live="polite" aria-label="대화 내용">
-        <ol className="mx-auto max-w-3xl space-y-3 px-3 py-4">
+        <ol className="mx-auto max-w-3xl space-y-3 px-4 py-6">
           {turns.map((t) => (
             <li key={t.id} className={`flex flex-col ${t.speaker === "user" ? "items-end" : "items-start"}`}>
               <span className="sr-only">{t.speaker === "user" ? "나:" : "상대:"}</span>
               <p
                 lang="en"
-                className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed ${
+                className={`max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] px-4 py-3 text-[15px] leading-relaxed ${
                   t.speaker === "user"
-                    ? "rounded-br-md bg-brand text-brand-ink"
-                    : "rounded-bl-md border border-border bg-surface"
+                    ? "rounded-br-md bg-ink text-white"
+                    : "rounded-bl-md bg-surface"
                 }`}
               >
                 {t.text}
               </p>
               {t.tip && (
-                <div className="mt-2 max-w-[85%] rounded-xl border border-accent bg-accent-soft px-3 py-2 text-sm">
-                  <p className="font-semibold text-accent">💡 더 자연스러운 표현</p>
+                <div className="reveal mt-2 max-w-[85%] rounded-[1.25rem] bg-accent-soft px-4 py-3 text-sm">
+                  <p className="eyebrow-accent text-xs">더 자연스러운 표현</p>
                   <p lang="en" className="mt-1">
                     <span className="text-muted line-through">{t.tip.original}</span> →{" "}
                     <span className="font-semibold">{t.tip.suggested}</span>
@@ -204,7 +206,7 @@ export function ChatRoom(props: Props) {
           ))}
           {pending && (
             <li className="flex flex-col items-end">
-              <p lang="en" className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-brand/70 px-4 py-2.5 text-[15px] text-brand-ink">
+              <p lang="en" className="max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] rounded-br-md bg-ink/60 px-4 py-2.5 text-[15px] text-white">
                 {pending.text}
               </p>
               {pending.state === "sending" ? (
@@ -212,7 +214,7 @@ export function ChatRoom(props: Props) {
                   상대가 답하는 중…
                 </p>
               ) : (
-                <div role="alert" className="mt-2 max-w-[85%] rounded-xl bg-bad-soft px-3 py-2 text-sm text-bad">
+                <div role="alert" className="mt-2 max-w-[85%] rounded-[1.25rem] bg-bad-soft px-4 py-3 text-sm text-bad">
                   <p>{pending.error}</p>
                   <div className="mt-2 flex gap-2">
                     <button
@@ -239,10 +241,10 @@ export function ChatRoom(props: Props) {
             </li>
           )}
           {sceneComplete && !pending && (
-            <li className="rounded-xl border border-ok bg-ok-soft px-4 py-3 text-sm">
+            <li className="reveal rounded-[1.25rem] bg-ok-soft px-5 py-4 text-sm">
               <p className="font-semibold text-ok">장면이 자연스럽게 마무리됐어요.</p>
               <p className="mt-1">대화를 끝내고 피드백을 받아 보세요. 더 이야기하고 싶다면 계속해도 괜찮아요.</p>
-              <button type="button" className="btn-primary mt-2 min-h-9 text-sm" onClick={() => setConfirmEnd(true)}>
+              <button type="button" className="btn-primary mt-3 min-h-9 text-sm" onClick={() => setConfirmEnd(true)}>
                 끝내고 피드백 받기
               </button>
             </li>
@@ -251,7 +253,7 @@ export function ChatRoom(props: Props) {
       </div>
 
       {confirmEnd && (
-        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-border bg-surface">
+        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-line bg-white">
           <div className="mx-auto max-w-3xl space-y-2 px-3 py-3">
             <p id="end-title" className="font-semibold">
               대화를 끝낼까요?
@@ -285,7 +287,7 @@ export function ChatRoom(props: Props) {
 
       <form
         onSubmit={onSubmit}
-        className="border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]"
+        className="border-t border-line bg-white pb-[env(safe-area-inset-bottom)]"
         aria-label="메시지 보내기"
       >
         <div className="mx-auto flex max-w-3xl items-end gap-2 px-3 py-2">
@@ -303,16 +305,17 @@ export function ChatRoom(props: Props) {
             onKeyDown={onKeyDown}
             placeholder="영어로 답해 보세요"
             disabled={Boolean(pending) || ending === "working"}
-            className="input max-h-32 min-h-11 flex-1 resize-none py-2.5"
+            className="input max-h-32 min-h-11 flex-1 resize-none rounded-[1.375rem] py-2.5"
             autoComplete="off"
             autoCapitalize="sentences"
           />
           <button
             type="submit"
-            className="btn-primary shrink-0"
+            className="btn-primary h-11 w-11 shrink-0 p-0"
+            aria-label="보내기"
             disabled={!draft.trim() || Boolean(pending) || ending === "working"}
           >
-            보내기
+            <ArrowRight className="text-base" />
           </button>
         </div>
         <p className="mx-auto max-w-3xl px-3 pb-2 text-xs text-muted">

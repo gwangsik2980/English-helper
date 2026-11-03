@@ -11,9 +11,16 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="text-2xl font-bold">설정</h1>
+      <header>
+        <p className="eyebrow reveal">Settings</p>
+        <h1 className="display reveal-lines mt-4 text-4xl sm:text-5xl">
+          <span className="line">
+            <span>설정</span>
+          </span>
+        </h1>
+      </header>
 
-      <section aria-labelledby="learn-title" className="card">
+      <section aria-labelledby="learn-title" className="card reveal sm:p-8">
         <h2 id="learn-title" className="section-title">
           학습 설정
         </h2>
@@ -29,7 +36,7 @@ export default async function SettingsPage() {
         />
       </section>
 
-      <section aria-labelledby="voice-title" className="card">
+      <section aria-labelledby="voice-title" className="card reveal sm:p-8">
         <h2 id="voice-title" className="section-title">
           음성
         </h2>
@@ -39,7 +46,7 @@ export default async function SettingsPage() {
         </p>
       </section>
 
-      <section aria-labelledby="privacy-title" className="card space-y-4">
+      <section aria-labelledby="privacy-title" className="card reveal space-y-4 sm:p-8">
         <h2 id="privacy-title" className="section-title">
           개인정보와 데이터
         </h2>
@@ -50,12 +57,12 @@ export default async function SettingsPage() {
           <li>대화에는 실제 이름, 전화번호, 주소 같은 개인정보 대신 가상의 정보를 써 주세요.</li>
         </ul>
         <div className="flex flex-wrap gap-2">
-          <a href="/api/account/export" className="btn-secondary">
+          <a href="/api/account/export" className="btn-light">
             내 데이터 내려받기 (JSON)
           </a>
           <LogoutButton />
         </div>
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-line pt-4">
           <DeleteAccount />
         </div>
       </section>
