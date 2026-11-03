@@ -91,7 +91,13 @@ export const ProfileInputSchema = z.object({
 export type ProfileInput = z.infer<typeof ProfileInputSchema>;
 
 export const MAX_TURN_CHARS = 500;
+/** Below this, an unedited voice transcript is not trusted for scoring (spec 4.5). */
+export const LOW_TRANSCRIPT_CONFIDENCE = 0.5;
+
 export const TurnInputSchema = z.object({
   text: z.string().trim().min(1).max(MAX_TURN_CHARS),
   clientTurnId: z.string().min(8).max(64),
+  modality: z.enum(["text", "voice"]).default("text"),
+  /** Browser-reported recognition confidence; null if unknown or the learner edited the transcript. */
+  transcriptConfidence: z.number().min(0).max(1).nullable().optional(),
 });

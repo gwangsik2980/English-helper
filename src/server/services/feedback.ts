@@ -1,6 +1,6 @@
 import "server-only";
 import type { Turn } from "@prisma/client";
-import { LEVEL_NUMBER } from "@/shared/schemas/domain";
+import { LEVEL_NUMBER, LOW_TRANSCRIPT_CONFIDENCE } from "@/shared/schemas/domain";
 import {
   FEEDBACK_SCHEMA_VERSION,
   RawFeedbackSchema,
@@ -83,9 +83,25 @@ export function validateFeedback(raw: unknown, ctx: ValidationContext): RawFeedb
   return { ...fb, goal_outcomes, strengths, improvements, next_practice };
 }
 
-export function hasInsufficientData(userTurns: { text: string }[]) {
-  const words = userTurns.reduce((n, t) => n + t.text.split(/\s+/).filter(Boolean).length, 0);
-  return userTurns.length < INSUFFICIENT_DATA.minUserTurns || words < INSUFFICIENT_DATA.minUserWords;
+type ScoredTurn = { text: string; modality?: string; transcriptConfidence?: number | null };
+
+/** An unedited voice line the recognizer itself was unsure about. */
+export function isLowConfidenceTranscript(t: ScoredTurn) {
+  return (
+    t.modality === "voice" &&
+    t.transcriptConfidence != null &&
+    t.transcriptConfidence < LOW_TRANSCRIPT_CONFIDENCE
+  );
+}
+
+/**
+ * Hold scores when there is too little reliable speech. Low-confidence voice
+ * transcripts don't count, so a misheard line can't produce a confident grade.
+ */
+export function hasInsufficientData(userTurns: ScoredTurn[]) {
+  const reliable = userTurns.filter((t) => !isLowConfidenceTranscript(t));
+  const words = reliable.reduce((n, t) => n + t.text.split(/\s+/).filter(Boolean).length, 0);
+  return reliable.length < INSUFFICIENT_DATA.minUserTurns || words < INSUFFICIENT_DATA.minUserWords;
 }
 
 function overallOutcome(fb: RawFeedback | null) {

@@ -51,6 +51,7 @@ export function feedbackSystemPrompt(): string {
     "- Give at most 2 strengths and at most 3 improvements, each with a short Korean explanation.",
     "- Do not treat American vs British variants as errors.",
     "- Do not rate pronunciation. Text and speech transcripts are not enough for that.",
+    "- Learner turns with modality \"voice\" are speech-recognition transcripts. If transcript_confidence is below 0.5, treat odd words as possible recognition errors: do not cite them as grammar or vocabulary mistakes, and lower your confidence. A null confidence on a voice turn means the learner reviewed the text before sending.",
     "- For listening, only add an observation when the learner's replies clearly show understanding or misunderstanding; confidence must stay at or below 0.6.",
     "- If the learner said very little, set insufficient_data to true and keep skill_observations empty.",
     "- next_practice.mission_id must be one of the candidate mission ids, or next_practice must be null.",

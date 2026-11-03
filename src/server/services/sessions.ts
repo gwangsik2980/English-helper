@@ -117,7 +117,8 @@ export async function addTurn(userId: string, sessionId: string, input: unknown)
   if (!parsed.success) {
     throw new AppError("invalid_input", "메시지는 1자 이상 500자 이하로 보내 주세요.");
   }
-  const { text, clientTurnId } = parsed.data;
+  const { text, clientTurnId, modality } = parsed.data;
+  const transcriptConfidence = modality === "voice" ? (parsed.data.transcriptConfidence ?? null) : null;
 
   const session = await loadOwnedSession(userId, sessionId);
   if (session.status !== "active") {
@@ -140,14 +141,18 @@ export async function addTurn(userId: string, sessionId: string, input: unknown)
       // edited line instead of leaving two unanswered lines in a row.
       userTurn =
         lastTurn?.speaker === "user"
-          ? await prisma.turn.update({ where: { id: lastTurn.id }, data: { text, clientTurnId } })
+          ? await prisma.turn.update({
+              where: { id: lastTurn.id },
+              data: { text, clientTurnId, modality, transcriptConfidence },
+            })
           : await prisma.turn.create({
         data: {
           sessionId,
           sequence: (lastTurn?.sequence ?? 0) + 1,
           speaker: "user",
           text,
-          modality: "text",
+          modality,
+          transcriptConfidence,
           clientTurnId,
         },
       });

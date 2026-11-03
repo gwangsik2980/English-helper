@@ -62,3 +62,29 @@ export function ArrowBadge({ dir = "right" }: { dir?: "right" | "up-right" }) {
     </span>
   );
 }
+
+export function MicIcon(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" strokeWidth={1.8} {...stroke} {...base} {...p}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+    </svg>
+  );
+}
+
+export function SpeakerIcon(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" strokeWidth={1.8} {...stroke} {...base} {...p}>
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" />
+      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+    </svg>
+  );
+}
+
+export function StopIcon(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...base} {...p}>
+      <rect x="6.5" y="6.5" width="11" height="11" rx="2" />
+    </svg>
+  );
+}

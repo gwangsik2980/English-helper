@@ -64,7 +64,9 @@ export class RuleBasedAnalyzer implements FeedbackAnalyzer {
       .slice(0, 2)
       .map(({ t, note }) => ({ quote: t.text, note_ko: note, turn_id: t.id }));
 
+    // Don't "correct" words the recognizer may have misheard.
     const improvements = userTurns
+      .filter((t) => !(t.modality === "voice" && t.transcriptConfidence != null && t.transcriptConfidence < 0.5))
       .map((t) => ({ t, tip: findTip(t.text) }))
       .filter((x) => x.tip !== null)
       .slice(0, 2)

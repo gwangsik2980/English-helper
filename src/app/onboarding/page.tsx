@@ -44,8 +44,8 @@ export default async function OnboardingPage() {
       <section className="card-soft mt-4 text-sm leading-relaxed text-muted">
         <h2 className="mb-1 font-semibold text-text">학습 데이터는 이렇게 다뤄요</h2>
         <p>
-          대화 텍스트는 피드백과 성장 기록을 만드는 데 쓰여요. 지금 버전은 텍스트 대화만 지원하고, 음성 기능이 추가되면 마이크
-          권한은 따로 물어볼게요. 거부해도 텍스트로 계속 학습할 수 있어요.
+          대화 텍스트는 피드백과 성장 기록을 만드는 데 쓰여요. 대화 중에 마이크로 말할 수도 있는데, 마이크 권한은 처음 쓸 때 목적을
+          먼저 안내한 뒤 물어봐요. 거부해도 텍스트로 계속 학습할 수 있고, 녹음된 소리는 우리 서버에 저장되지 않아요.
         </p>
       </section>
     </main>

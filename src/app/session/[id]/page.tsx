@@ -26,7 +26,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       goals={mission.successCriteria.map(({ id, descriptionKo }) => ({ id, descriptionKo }))}
       hints={mission.scenario.hintPhrases}
       initialSceneComplete={session.sceneComplete}
-      initialTurns={session.turns.map((t) => ({ id: t.id, speaker: t.speaker, text: t.text, tip: t.tip }))}
+      initialTurns={session.turns.map((t) => ({ id: t.id, speaker: t.speaker, text: t.text, tip: t.tip, modality: t.modality }))}
     />
   );
 }
