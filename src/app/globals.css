@@ -66,9 +66,15 @@
   --font-script: var(--font-galada), cursive;
 }
 
-html {
-  /* Scroll yes, pinch or double-tap zoom no (see NoPinchZoom). */
+/* Scroll yes, pinch or double-tap zoom no (see NoPinchZoom). touch-action
+   is not inherited and every scroll area (chat list, panels, textarea)
+   starts fresh, so it is set on every element, not just html. */
+html,
+html * {
   touch-action: pan-x pan-y;
+}
+
+html {
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
 }

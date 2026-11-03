@@ -45,6 +45,7 @@
   - Speak Simple 책 내용은 저작권 때문에 앱에 넣지 않기로 함. 사용자가 배운 표현을 표현장에 직접 적는 방식
 - 입력칸 글자 16px (`globals.css` `@utility input`): 아이폰 사파리는 16px 미만 입력칸을 누르면 화면을 확대해서 대화 화면 위아래 바가 밀려남. 예전 주석 "15px면 안 커짐"은 틀렸음
   - 손가락 확대 막음 (사용자 요청: 확대해도 위아래 바가 고정돼야 함). viewport `maximumScale 1, userScalable false`, `html { touch-action: pan-x pan-y }`, iOS용 `NoPinchZoom`(gesture 이벤트와 두 손가락 touchmove 차단). 대신 글씨를 키울 방법이 없어서 필요하면 글자 크기 설정 추가
+- 대화 목록은 메시지가 하나여도 위아래로 끌리고 튕기게 (사용자 요청: 실제 메신저처럼). 목록 안 `<ol>`을 `min-h-[calc(100%+1px)]`로 항상 1px 넘치게 함. `touch-action: pan-x pan-y`는 html뿐 아니라 모든 요소에 (스크롤 영역은 상속받지 않음)
 - 저작권 표시 `© 2026 GWANG. All rights reserved.` (`src/features/ui/SiteFooter.tsx`)
   - 앱 화면, 로그인·가입·비밀번호 찾기, 온보딩 맨 아래. 대화 화면은 입력창과 겹쳐서 제외
 - 로그인·가입 화면 정리: 제목 위 작은 문구("다시 오셨네요", "처음 시작하기")와 로그인 아래 데이터 안내 문장 삭제 (사용자 요청. 데이터 안내는 온보딩·설정에 남아 있음)
