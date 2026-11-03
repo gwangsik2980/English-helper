@@ -18,6 +18,16 @@ const DEFAULT_MODEL = "claude-opus-5-5";
 // the API re-runs it on Anthropic's recommended fallback model.
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
+/**
+ * `fallbacks: "default"` is accepted by the Opus 5.x / Fable / Sonnet 5.5
+ * line on the Claude API. Claude Haiku 5.5 has no server-side fallback, so
+ * the parameter is left out there.
+ */
+function fallbackParams(model: string) {
+  const supported = /^claude-(opus-5|fable-5|mythos-5|sonnet-5-5)/.test(model);
+  return supported ? { betas: [FALLBACK_BETA], fallbacks: "default" as const } : {};
+}
+
 const PartnerOutputSchema = z.object({
   reply: z.string(),
   tip: z
@@ -57,7 +67,7 @@ function toAppError(err: unknown): AppError {
 export class ClaudePartner implements ConversationPartner {
   constructor(
     private readonly client: Anthropic,
-    readonly modelName: string = process.env.CLAUDE_MODEL || DEFAULT_MODEL,
+    readonly modelName: string = process.env.CLAUDE_PARTNER_MODEL || process.env.CLAUDE_MODEL || DEFAULT_MODEL,
   ) {}
 
   async reply(ctx: PartnerContext): Promise<PartnerReply> {
@@ -75,8 +85,7 @@ export class ClaudePartner implements ConversationPartner {
         messages,
         // Conversation turns are short and latency-sensitive.
         output_config: { effort: "low", format: betaZodOutputFormat(PartnerOutputSchema) },
-        betas: [FALLBACK_BETA],
-        fallbacks: "default",
+        ...fallbackParams(this.modelName),
       });
       logUsage("partner", response.model, response.usage);
       if (response.stop_reason === "refusal" || !response.parsed_output) {
@@ -97,7 +106,7 @@ export class ClaudePartner implements ConversationPartner {
 export class ClaudeFeedbackAnalyzer implements FeedbackAnalyzer {
   constructor(
     private readonly client: Anthropic,
-    readonly modelName: string = process.env.CLAUDE_MODEL || DEFAULT_MODEL,
+    readonly modelName: string = process.env.CLAUDE_FEEDBACK_MODEL || process.env.CLAUDE_MODEL || DEFAULT_MODEL,
   ) {}
 
   async analyze(ctx: AnalyzerContext): Promise<unknown> {
@@ -108,8 +117,7 @@ export class ClaudeFeedbackAnalyzer implements FeedbackAnalyzer {
         system: feedbackSystemPrompt(),
         messages: [{ role: "user", content: feedbackUserPayload(ctx) }],
         output_config: { effort: "medium", format: betaZodOutputFormat(RawFeedbackSchema) },
-        betas: [FALLBACK_BETA],
-        fallbacks: "default",
+        ...fallbackParams(this.modelName),
       });
       const response = await stream.finalMessage();
       logUsage("feedback", response.model, response.usage);
