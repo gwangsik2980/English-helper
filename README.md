@@ -67,7 +67,8 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
    - `DATABASE_URL`: Neon pooled 연결 문자열 (호스트에 `-pooler`가 있는 것)
    - `DATABASE_URL_UNPOOLED`: Neon direct 연결 문자열 (마이그레이션용)
    - `APP_URL`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `MAIL_FROM`
-3. Vercel은 `vercel-build` 스크립트로 빌드합니다. 마이그레이션 적용, 미션 시드, `next build` 순서입니다.
+3. 서버 함수 지역은 `vercel.json`에서 싱가포르(`sin1`)로 고정했습니다. Neon DB가 `ap-southeast-1`(싱가포르)에 있어서, 기본값인 미국 동부에서 돌리면 쿼리마다 태평양을 왕복합니다.
+4. Vercel은 `vercel-build` 스크립트로 빌드합니다. 마이그레이션 적용, 미션 시드, `next build` 순서입니다.
 
 DB 연결은 Prisma가 `pg`(node-postgres) 풀을 `@prisma/adapter-pg`로 쓰고, `@vercel/functions`의 `attachDatabasePool`로 Vercel이 쉬는 인스턴스의 연결을 정리하게 했습니다. Neon 가이드의 Vercel 권장 방식입니다.
 
