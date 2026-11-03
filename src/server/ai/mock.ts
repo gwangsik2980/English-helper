@@ -88,24 +88,28 @@ export class RuleBasedAnalyzer implements FeedbackAnalyzer {
         level: avgWords >= 8 ? "proficient" : avgWords >= 4 ? "developing" : "emerging",
         confidence: 0.5,
         evidence_turn_ids: userIds,
+        reason_ko: `한 번 말할 때 평균 ${Math.round(avgWords)}단어를 썼어요.`,
       },
       {
         skill: "vocabulary",
         level: metCount >= 2 ? "developing" : "emerging",
         confidence: 0.55,
         evidence_turn_ids: userIds,
+        reason_ko: `상황 목표 ${goal_outcomes.length}개 중 ${metCount}개에 필요한 표현을 썼어요.`,
       },
       {
         skill: "grammar",
         level: improvements.length === 0 ? "developing" : "emerging",
         confidence: 0.5,
         evidence_turn_ids: improvements.length ? improvements.map((i) => i.turn_id) : userIds,
+        reason_ko: improvements.length ? `고칠 만한 문장이 ${improvements.length}개 보였어요.` : "눈에 띄는 문법 실수가 없었어요.",
       },
       {
         skill: "naturalness",
         level: politeTurns.length >= 2 ? "developing" : "emerging",
         confidence: 0.5,
         evidence_turn_ids: politeTurns.length ? politeTurns.map((t) => t.id) : userIds,
+        reason_ko: politeTurns.length ? `공손한 표현을 ${politeTurns.length}번 썼어요.` : "please, could 같은 공손한 표현이 아직 적었어요.",
       },
     ];
 

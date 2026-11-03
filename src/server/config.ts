@@ -16,7 +16,7 @@ export const LEVEL_THRESHOLDS = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 
 
 export const PROMPT_VERSIONS = {
   partner: "partner.v1",
-  feedback: "feedback-prompt.v1",
+  feedback: "feedback-prompt.v2",
 } as const;
 
 /** Below this much user speech we hold scores instead of guessing (spec 4.5). */
@@ -27,6 +27,9 @@ export const INSUFFICIENT_DATA = {
 
 /** Skill observations below this confidence are stored but excluded from trends. */
 export const SKILL_CONFIDENCE_FLOOR = 0.5;
+
+/** Listening is only inferred from replies, so it never claims more than this. */
+export const LISTENING_CONFIDENCE_CAP = 0.6;
 
 export const AUTH_SESSION_DAYS = 30;
 export const AUTH_COOKIE = "eq_session";

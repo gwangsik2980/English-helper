@@ -7,6 +7,7 @@ import { CountUp } from "@/features/ui/CountUp";
 import { CalmFluid } from "@/features/ui/FluidBackground";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/errors";
+import { SKILL_CONFIDENCE_FLOOR } from "@/server/config";
 import { requirePageUser } from "@/server/http";
 import { getMissionByIdOrSlug } from "@/server/repositories/missions";
 import { getFeedback } from "@/server/services/feedback";
@@ -148,18 +149,24 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           {view.feedback.skill_observations.length > 0 && (
             <section className="card reveal sm:p-6">
               <h2 className="section-title">이번 대화에서 관찰한 역량</h2>
-              <ul className="space-y-1.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 {view.feedback.skill_observations.map((o) => (
-                  <li key={o.skill} className="flex justify-between gap-3">
-                    <span className="font-semibold">{SKILL_LABEL_KO[o.skill]}</span>
-                    <span className="text-muted">
-                      {BAND_LABEL_KO[o.level]} · 확신도 {Math.round(o.confidence * 100)}%
-                    </span>
+                  <li key={o.skill}>
+                    <div className="flex justify-between gap-3">
+                      <span className="font-semibold">{SKILL_LABEL_KO[o.skill]}</span>
+                      <span className="text-muted">
+                        {BAND_LABEL_KO[o.level]} · 근거 {o.evidence_turn_ids.length}문장
+                        {o.confidence < SKILL_CONFIDENCE_FLOOR && " · 참고만"}
+                      </span>
+                    </div>
+                    {/* feedback.v1 records were saved before reason_ko existed. */}
+                    {o.reason_ko && <p className="mt-1 text-muted">{o.reason_ko}</p>}
                   </li>
                 ))}
               </ul>
               <p className="mt-3 text-xs text-muted">
-                한 번의 대화로 본 관찰이에요. 텍스트 대화만으로는 발음과 말하기 속도를 알 수 없어서 평가하지 않아요.
+                한 번의 대화로 본 관찰이에요. 참고만 표시가 붙은 항목은 근거가 적어서 성장 기록 추세에 넣지 않아요. 텍스트 대화만으로는 발음과
+                말하기 속도를 알 수 없어서 평가하지 않아요.
               </p>
             </section>
           )}

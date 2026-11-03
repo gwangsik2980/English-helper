@@ -10,7 +10,7 @@ import {
 import { prisma } from "../db";
 import { AppError } from "../errors";
 import { getAi } from "../ai";
-import { INSUFFICIENT_DATA, PROMPT_VERSIONS, XP_RULES } from "../config";
+import { INSUFFICIENT_DATA, LISTENING_CONFIDENCE_CAP, PROMPT_VERSIONS, XP_RULES } from "../config";
 import { listMissions, toMissionView } from "../repositories/missions";
 import { getProfile } from "./profile";
 import { awardXp } from "./xp";
@@ -70,6 +70,18 @@ export function validateFeedback(raw: unknown, ctx: ValidationContext): RawFeedb
   const next_practice =
     fb.next_practice && ctx.candidateMissionIds.includes(fb.next_practice.mission_id) ? fb.next_practice : null;
 
+  // Confidence tracks how much evidence backs a skill, so the server caps it
+  // by the number of distinct cited turns instead of trusting the model.
+  // An observation with no evidence is dropped.
+  const skill_observations = fb.skill_observations
+    .map((o) => {
+      const evidence = [...new Set(o.evidence_turn_ids)];
+      let cap = evidenceConfidenceCap(evidence.length);
+      if (o.skill === "listening") cap = Math.min(cap, LISTENING_CONFIDENCE_CAP);
+      return { ...o, evidence_turn_ids: evidence, confidence: Math.min(o.confidence, cap) };
+    })
+    .filter((o) => o.evidence_turn_ids.length > 0);
+
   if (fb.insufficient_data) {
     return {
       ...fb,
@@ -80,7 +92,15 @@ export function validateFeedback(raw: unknown, ctx: ValidationContext): RawFeedb
       next_practice,
     };
   }
-  return { ...fb, goal_outcomes, strengths, improvements, next_practice };
+  return { ...fb, goal_outcomes, strengths, improvements, skill_observations, next_practice };
+}
+
+/** Highest confidence a skill observation may claim with this many cited learner turns. */
+export function evidenceConfidenceCap(evidenceTurns: number): number {
+  if (evidenceTurns <= 0) return 0;
+  if (evidenceTurns === 1) return 0.5;
+  if (evidenceTurns <= 3) return 0.7;
+  return 0.85;
 }
 
 type ScoredTurn = { text: string; modality?: string; transcriptConfidence?: number | null };

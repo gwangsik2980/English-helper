@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasInsufficientData, validateFeedback } from "@/server/services/feedback";
+import { evidenceConfidenceCap, hasInsufficientData, validateFeedback } from "@/server/services/feedback";
 import type { RawFeedback } from "@/shared/schemas/feedback";
 
 const ctx = {
@@ -21,7 +21,9 @@ function base(): RawFeedback {
     improvements: [
       { original: "I want one coffee", suggested: "Could I have a coffee, please?", reason_ko: "", turn_id: "t2", confidence: 0.8 },
     ],
-    skill_observations: [{ skill: "vocabulary", level: "developing", confidence: 0.6, evidence_turn_ids: ["t2", "t4"] }],
+    skill_observations: [
+      { skill: "vocabulary", level: "developing", confidence: 0.6, evidence_turn_ids: ["t2", "t4"], reason_ko: "" },
+    ],
     summary_ko: "좋아요",
     next_practice: { mission_id: "m-next", reason_ko: "" },
     insufficient_data: false,
@@ -88,6 +90,37 @@ describe("validateFeedback", () => {
     const out = validateFeedback(fb, ctx)!;
     expect(out.goal_outcomes.every((g) => g.status === "undetermined")).toBe(true);
     expect(out.skill_observations).toEqual([]);
+  });
+});
+
+describe("skill observation confidence", () => {
+  it("caps confidence by the number of distinct cited turns", () => {
+    const fb = base();
+    fb.skill_observations = [
+      { skill: "grammar", level: "proficient", confidence: 0.9, evidence_turn_ids: ["t4"], reason_ko: "" },
+      { skill: "fluency", level: "developing", confidence: 0.9, evidence_turn_ids: ["t2", "t4", "t4"], reason_ko: "" },
+    ];
+    const out = validateFeedback(fb, ctx)!;
+    expect(out.skill_observations.map((o) => o.confidence)).toEqual([0.5, 0.7]);
+    expect(out.skill_observations[1].evidence_turn_ids).toEqual(["t2", "t4"]);
+  });
+
+  it("keeps listening at or below 0.6 and drops observations without evidence", () => {
+    const fb = base();
+    fb.skill_observations = [
+      { skill: "listening", level: "proficient", confidence: 0.8, evidence_turn_ids: ["t2", "t4"], reason_ko: "" },
+      { skill: "vocabulary", level: "developing", confidence: 0.6, evidence_turn_ids: [], reason_ko: "" },
+    ];
+    const out = validateFeedback(fb, ctx)!;
+    expect(out.skill_observations).toHaveLength(1);
+    expect(out.skill_observations[0]).toMatchObject({ skill: "listening", confidence: 0.6 });
+  });
+
+  it("does not raise a confidence the model already kept low", () => {
+    const fb = base();
+    fb.skill_observations[0].confidence = 0.4;
+    expect(validateFeedback(fb, ctx)!.skill_observations[0].confidence).toBe(0.4);
+    expect(evidenceConfidenceCap(5)).toBe(0.85);
   });
 });
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { SKILL_KEYS } from "./domain";
 
-export const FEEDBACK_SCHEMA_VERSION = "feedback.v1";
+export const FEEDBACK_SCHEMA_VERSION = "feedback.v2";
 
 export const GoalStatusSchema = z.enum(["met", "partial", "not_met", "undetermined"]);
 export type GoalStatus = z.infer<typeof GoalStatusSchema>;
@@ -43,6 +43,8 @@ export const RawFeedbackSchema = z.object({
       level: ValueBandSchema,
       confidence: z.number().min(0).max(1),
       evidence_turn_ids: z.array(z.string()),
+      /** One Korean line on what in the cited turns led to this band. Missing on feedback.v1 records. */
+      reason_ko: z.string(),
     }),
   ),
   summary_ko: z.string(),
