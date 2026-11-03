@@ -4,12 +4,25 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCalmFluid } from "@/features/ui/FluidBackground";
-import { ArrowRight, LogoMark, MicIcon, SpeakerIcon, StopIcon } from "@/features/ui/Icons";
-import { useSpeechRecognition, type RecognitionResult } from "@/features/voice/speech-recognition";
+import { FeedbackProgress } from "./FeedbackProgress";
+import {
+  ArrowRight,
+  LogoMark,
+  MicIcon,
+  SpeakerIcon,
+  StopIcon,
+} from "@/features/ui/Icons";
+import {
+  useSpeechRecognition,
+  type RecognitionResult,
+} from "@/features/voice/speech-recognition";
 import { useSpeechSynthesis } from "@/features/voice/speech-synthesis";
 import { useVoicePrefs } from "@/features/voice/voice-prefs";
 import { api, ApiError } from "@/shared/api-client";
-import { LOW_TRANSCRIPT_CONFIDENCE, MAX_TURN_CHARS } from "@/shared/schemas/domain";
+import {
+  LOW_TRANSCRIPT_CONFIDENCE,
+  MAX_TURN_CHARS,
+} from "@/shared/schemas/domain";
 
 export type ChatTurn = {
   id: string;
@@ -19,8 +32,16 @@ export type ChatTurn = {
   modality?: string;
 };
 
-type Outgoing = { text: string; modality: "text" | "voice"; transcriptConfidence: number | null };
-type Pending = Outgoing & { clientTurnId: string; state: "sending" | "failed"; error?: string };
+type Outgoing = {
+  text: string;
+  modality: "text" | "voice";
+  transcriptConfidence: number | null;
+};
+type Pending = Outgoing & {
+  clientTurnId: string;
+  state: "sending" | "failed";
+  error?: string;
+};
 
 type Props = {
   sessionId: string;
@@ -43,7 +64,9 @@ export function ChatRoom(props: Props) {
   const [turns, setTurns] = useState<ChatTurn[]>(props.initialTurns);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
-  const [sceneComplete, setSceneComplete] = useState(props.initialSceneComplete);
+  const [sceneComplete, setSceneComplete] = useState(
+    props.initialSceneComplete,
+  );
   const [panel, setPanel] = useState<"none" | "goals" | "hints">("none");
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [ending, setEnding] = useState<"idle" | "working" | "failed">("idle");
@@ -56,7 +79,9 @@ export function ChatRoom(props: Props) {
   const tts = useSpeechSynthesis();
   /** The draft came from speech; kept so we know whether the learner edited it. */
   const [voiceDraft, setVoiceDraft] = useState<RecognitionResult | null>(null);
-  const [micNotice, setMicNotice] = useState<"none" | "intro" | "unsupported">("none");
+  const [micNotice, setMicNotice] = useState<"none" | "intro" | "unsupported">(
+    "none",
+  );
   const stt = useSpeechRecognition((r) => {
     setDraft(r.transcript);
     setVoiceDraft(r);
@@ -90,7 +115,10 @@ export function ChatRoom(props: Props) {
   useCalmFluid();
 
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+    listRef.current?.scrollTo({
+      top: listRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [turns, pending]);
 
   async function send(out: Outgoing, clientTurnId: string) {
@@ -100,14 +128,22 @@ export function ChatRoom(props: Props) {
         userTurn: ChatTurn;
         aiTurn: ChatTurn;
         sceneComplete: boolean;
-      }>(`/api/sessions/${props.sessionId}/turns`, { method: "POST", json: { ...out, clientTurnId } });
-      setTurns((t) => [...t.filter((x) => x.id !== res.userTurn.id), res.userTurn, res.aiTurn]);
+      }>(`/api/sessions/${props.sessionId}/turns`, {
+        method: "POST",
+        json: { ...out, clientTurnId },
+      });
+      setTurns((t) => [
+        ...t.filter((x) => x.id !== res.userTurn.id),
+        res.userTurn,
+        res.aiTurn,
+      ]);
       setSceneComplete(res.sceneComplete);
       setPending(null);
       if (prefs.autoRead) tts.speak(res.aiTurn.id, res.aiTurn.text, prefs.rate);
       inputRef.current?.focus();
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "보내지 못했어요.";
+      const message =
+        err instanceof ApiError ? err.message : "보내지 못했어요.";
       if (err instanceof ApiError && err.code === "session_closed") {
         router.refresh();
       }
@@ -147,11 +183,15 @@ export function ChatRoom(props: Props) {
     setEnding("working");
     setEndError(null);
     try {
-      await api(`/api/sessions/${props.sessionId}/complete`, { method: "POST" });
+      await api(`/api/sessions/${props.sessionId}/complete`, {
+        method: "POST",
+      });
       router.push(`/session/${props.sessionId}/result`);
     } catch (err) {
       setEnding("failed");
-      setEndError(err instanceof ApiError ? err.message : "대화를 끝내지 못했어요.");
+      setEndError(
+        err instanceof ApiError ? err.message : "대화를 끝내지 못했어요.",
+      );
     }
   }
 
@@ -161,17 +201,27 @@ export function ChatRoom(props: Props) {
     <div className="flex h-dvh flex-col">
       <header className="border-b border-white/10 bg-[rgb(4_5_12/0.5)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
-          <Link href="/" className="btn-ghost px-2" aria-label="홈으로 나가기 (대화는 저장돼요)">
+          <Link
+            href="/"
+            className="btn-ghost px-2"
+            aria-label="홈으로 나가기 (대화는 저장돼요)"
+          >
             ←
           </Link>
           <LogoMark aria-hidden className="shrink-0 text-[1.1rem] text-white" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[15px] font-semibold tracking-tight">{props.missionTitle}</h1>
+            <h1 className="truncate text-[15px] font-semibold tracking-tight">
+              {props.missionTitle}
+            </h1>
             <p className="truncate text-xs text-muted">
               상대: <span lang="en">{props.aiRole}</span>
             </p>
           </div>
-          <button type="button" className="btn-secondary min-h-9 px-4 text-xs font-medium uppercase tracking-wide" onClick={() => setConfirmEnd(true)}>
+          <button
+            type="button"
+            className="btn-secondary min-h-9 px-4 text-xs font-medium uppercase tracking-wide"
+            onClick={() => setConfirmEnd(true)}
+          >
             끝내기
           </button>
         </div>
@@ -214,7 +264,10 @@ export function ChatRoom(props: Props) {
               </button>
             </>
           )}
-          <span className="chip ml-auto hidden sm:inline-flex" aria-live="polite">
+          <span
+            className="chip ml-auto hidden sm:inline-flex"
+            aria-live="polite"
+          >
             ✓ 자동 저장됨
           </span>
         </div>
@@ -254,11 +307,21 @@ export function ChatRoom(props: Props) {
         )}
       </header>
 
-      <div ref={listRef} className="flex-1 overflow-y-auto" aria-live="polite" aria-label="대화 내용">
+      <div
+        ref={listRef}
+        className="flex-1 overflow-y-auto"
+        aria-live="polite"
+        aria-label="대화 내용"
+      >
         <ol className="mx-auto max-w-3xl space-y-3 px-4 py-6">
           {turns.map((t) => (
-            <li key={t.id} className={`flex flex-col ${t.speaker === "user" ? "items-end" : "items-start"}`}>
-              <span className="sr-only">{t.speaker === "user" ? "나:" : "상대:"}</span>
+            <li
+              key={t.id}
+              className={`flex flex-col ${t.speaker === "user" ? "items-end" : "items-start"}`}
+            >
+              <span className="sr-only">
+                {t.speaker === "user" ? "나:" : "상대:"}
+              </span>
               <p
                 lang="en"
                 className={`max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] px-4 py-3 text-[15px] leading-relaxed ${
@@ -272,9 +335,15 @@ export function ChatRoom(props: Props) {
               {t.speaker === "ai" && tts.supported && (
                 <button
                   type="button"
-                  onClick={() => (tts.speakingId === t.id ? tts.stop() : tts.speak(t.id, t.text, prefs.rate))}
+                  onClick={() =>
+                    tts.speakingId === t.id
+                      ? tts.stop()
+                      : tts.speak(t.id, t.text, prefs.rate)
+                  }
                   className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-muted hover:text-text"
-                  aria-label={tts.speakingId === t.id ? "읽기 멈추기" : "소리로 듣기"}
+                  aria-label={
+                    tts.speakingId === t.id ? "읽기 멈추기" : "소리로 듣기"
+                  }
                 >
                   {tts.speakingId === t.id ? <StopIcon /> : <SpeakerIcon />}
                   {tts.speakingId === t.id ? "멈추기" : "듣기"}
@@ -289,8 +358,10 @@ export function ChatRoom(props: Props) {
                 <div className="reveal mt-2 max-w-[85%] rounded-[1.25rem] bg-accent-soft px-4 py-3 text-sm">
                   <p className="eyebrow-accent text-xs">더 자연스러운 표현</p>
                   <p lang="en" className="mt-1">
-                    <span className="text-muted line-through">{t.tip.original}</span> →{" "}
-                    <span className="font-semibold">{t.tip.suggested}</span>
+                    <span className="text-muted line-through">
+                      {t.tip.original}
+                    </span>{" "}
+                    → <span className="font-semibold">{t.tip.suggested}</span>
                   </p>
                   <p className="mt-0.5 text-muted">{t.tip.reasonKo}</p>
                 </div>
@@ -299,7 +370,10 @@ export function ChatRoom(props: Props) {
           ))}
           {pending && (
             <li className="flex flex-col items-end">
-              <p lang="en" className="max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] rounded-br-md bg-accent/60 px-4 py-2.5 text-[15px] text-accent-ink">
+              <p
+                lang="en"
+                className="max-w-[85%] whitespace-pre-wrap rounded-[1.25rem] rounded-br-md bg-accent/60 px-4 py-2.5 text-[15px] text-accent-ink"
+              >
                 {pending.text}
               </p>
               {pending.state === "sending" ? (
@@ -307,7 +381,10 @@ export function ChatRoom(props: Props) {
                   상대가 답하는 중…
                 </p>
               ) : (
-                <div role="alert" className="mt-2 max-w-[85%] rounded-[1.25rem] bg-bad-soft px-4 py-3 text-sm text-bad">
+                <div
+                  role="alert"
+                  className="mt-2 max-w-[85%] rounded-[1.25rem] bg-bad-soft px-4 py-3 text-sm text-bad"
+                >
                   <p>{pending.error}</p>
                   <div className="mt-2 flex gap-2">
                     <button
@@ -315,7 +392,11 @@ export function ChatRoom(props: Props) {
                       className="btn-secondary min-h-9 px-3 text-sm"
                       onClick={() =>
                         void send(
-                          { text: pending.text, modality: pending.modality, transcriptConfidence: pending.transcriptConfidence },
+                          {
+                            text: pending.text,
+                            modality: pending.modality,
+                            transcriptConfidence: pending.transcriptConfidence,
+                          },
                           pending.clientTurnId,
                         )
                       }
@@ -340,9 +421,18 @@ export function ChatRoom(props: Props) {
           )}
           {sceneComplete && !pending && (
             <li className="reveal rounded-[1.25rem] bg-ok-soft px-5 py-4 text-sm">
-              <p className="font-semibold text-ok">장면이 자연스럽게 마무리됐어요.</p>
-              <p className="mt-1">대화를 끝내고 피드백을 받아 보세요. 더 이야기하고 싶다면 계속해도 괜찮아요.</p>
-              <button type="button" className="btn-primary mt-3 min-h-9 text-sm" onClick={() => setConfirmEnd(true)}>
+              <p className="font-semibold text-ok">
+                장면이 자연스럽게 마무리됐어요.
+              </p>
+              <p className="mt-1">
+                대화를 끝내고 피드백을 받아 보세요. 더 이야기하고 싶다면
+                계속해도 괜찮아요.
+              </p>
+              <button
+                type="button"
+                className="btn-primary mt-3 min-h-9 text-sm"
+                onClick={() => setConfirmEnd(true)}
+              >
                 끝내고 피드백 받기
               </button>
             </li>
@@ -351,49 +441,77 @@ export function ChatRoom(props: Props) {
       </div>
 
       {confirmEnd && (
-        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-white/10 bg-[rgb(4_5_12/0.7)] backdrop-blur-xl">
-          <div className="mx-auto max-w-3xl space-y-2 px-3 py-3">
-            <p id="end-title" className="font-semibold">
-              대화를 끝낼까요?
-            </p>
-            <p className="text-sm text-muted">
-              {userTurnCount < 2
-                ? "아직 대화가 짧아서 평가는 보류될 수 있어요. 그래도 지금까지 내용은 저장돼요."
-                : "끝내면 지금까지의 대화로 피드백을 만들어요. 끝낸 대화에는 더 이어서 말할 수 없어요."}
-            </p>
-            {endError && (
-              <p role="alert" className="text-sm text-bad">
-                {endError}
-              </p>
-            )}
-            <div className="flex gap-2">
-              <button type="button" className="btn-primary" onClick={endSession} disabled={ending === "working"}>
-                {ending === "working" ? "피드백을 만드는 중…" : ending === "failed" ? "다시 시도" : "끝내고 피드백 받기"}
-              </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => setConfirmEnd(false)}
-                disabled={ending === "working"}
-              >
-                계속 대화하기
-              </button>
+        <div
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="end-title"
+          className="border-t border-white/10 bg-[rgb(4_5_12/0.7)] backdrop-blur-xl"
+        >
+          {ending === "working" ? (
+            <div className="mx-auto max-w-3xl px-3 py-4">
+              <span id="end-title" className="sr-only">
+                피드백 만드는 중
+              </span>
+              <FeedbackProgress />
             </div>
-          </div>
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-2 px-3 py-3">
+              <p id="end-title" className="font-semibold">
+                대화를 끝낼까요?
+              </p>
+              <p className="text-sm text-muted">
+                {userTurnCount < 2
+                  ? "아직 대화가 짧아서 평가는 보류될 수 있어요. 그래도 지금까지 내용은 저장돼요."
+                  : "끝내면 지금까지의 대화로 피드백을 만들어요. 끝낸 대화에는 더 이어서 말할 수 없어요."}
+              </p>
+              {endError && (
+                <p role="alert" className="text-sm text-bad">
+                  {endError}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={endSession}
+                >
+                  {ending === "failed" ? "다시 시도" : "끝내고 피드백 받기"}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setConfirmEnd(false)}
+                >
+                  계속 대화하기
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {(micNotice !== "none" || listening || stt.error || tts.error || lowConfidence || voiceDraft) && (
+      {(micNotice !== "none" ||
+        listening ||
+        stt.error ||
+        tts.error ||
+        lowConfidence ||
+        voiceDraft) && (
         <div className="border-t border-white/10 bg-[rgb(4_5_12/0.7)] backdrop-blur-xl">
           <div className="mx-auto max-w-3xl space-y-2 px-3 py-3 text-sm">
             {micNotice === "intro" && (
-              <div className="space-y-2" role="dialog" aria-labelledby="mic-title">
+              <div
+                className="space-y-2"
+                role="dialog"
+                aria-labelledby="mic-title"
+              >
                 <p id="mic-title" className="font-semibold">
                   마이크로 말해서 답할 수 있어요
                 </p>
                 <p className="text-muted">
-                  버튼을 누를 때마다 한 문장만 듣고 자동으로 멈춰요. 받아 적은 문장은 보내기 전에 확인하고 고칠 수 있어요. 음성은
-                  브라우저의 음성 인식 서비스(Chrome은 Google)가 처리하고, 우리 서버에는 보낸 글자만 저장돼요.
+                  버튼을 누를 때마다 한 문장만 듣고 자동으로 멈춰요. 받아 적은
+                  문장은 보내기 전에 확인하고 고칠 수 있어요. 음성은 브라우저의
+                  음성 인식 서비스(Chrome은 Google)가 처리하고, 우리 서버에는
+                  보낸 글자만 저장돼요.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -407,18 +525,30 @@ export function ChatRoom(props: Props) {
                   >
                     마이크 켜기
                   </button>
-                  <button type="button" className="btn-ghost min-h-9 text-sm" onClick={() => setMicNotice("none")}>
+                  <button
+                    type="button"
+                    className="btn-ghost min-h-9 text-sm"
+                    onClick={() => setMicNotice("none")}
+                  >
                     텍스트로만 할게요
                   </button>
                 </div>
               </div>
             )}
             {micNotice === "unsupported" && (
-              <div role="alert" className="flex items-start justify-between gap-3">
+              <div
+                role="alert"
+                className="flex items-start justify-between gap-3"
+              >
                 <p className="text-muted">
-                  이 브라우저는 음성 인식을 지원하지 않아요. Chrome, Edge, Safari에서 쓸 수 있어요. 지금은 텍스트로 계속해 주세요.
+                  이 브라우저는 음성 인식을 지원하지 않아요. Chrome, Edge,
+                  Safari에서 쓸 수 있어요. 지금은 텍스트로 계속해 주세요.
                 </p>
-                <button type="button" className="btn-ghost min-h-8 px-3 text-xs" onClick={() => setMicNotice("none")}>
+                <button
+                  type="button"
+                  className="btn-ghost min-h-8 px-3 text-xs"
+                  onClick={() => setMicNotice("none")}
+                >
                   닫기
                 </button>
               </div>
@@ -432,28 +562,47 @@ export function ChatRoom(props: Props) {
                 <span className="flex-1">
                   <span className="font-semibold">마이크 켜짐 · 듣는 중</span>
                   <span lang="en" className="block truncate text-muted">
-                    {stt.interim || "영어로 말해 보세요. 말을 멈추면 자동으로 끝나요."}
+                    {stt.interim ||
+                      "영어로 말해 보세요. 말을 멈추면 자동으로 끝나요."}
                   </span>
                 </span>
-                <button type="button" className="btn-secondary min-h-9 px-3 text-xs" onClick={stt.stop}>
+                <button
+                  type="button"
+                  className="btn-secondary min-h-9 px-3 text-xs"
+                  onClick={stt.stop}
+                >
                   다 말했어요
                 </button>
-                <button type="button" className="btn-ghost min-h-9 px-3 text-xs" onClick={stt.cancel}>
+                <button
+                  type="button"
+                  className="btn-ghost min-h-9 px-3 text-xs"
+                  onClick={stt.cancel}
+                >
                   취소
                 </button>
               </div>
             )}
             {!listening && voiceDraft && (
-              <p className={lowConfidence ? "text-warn" : "text-muted"} role="status">
+              <p
+                className={lowConfidence ? "text-warn" : "text-muted"}
+                role="status"
+              >
                 {lowConfidence
                   ? "잘못 알아들었을 수 있어요. 입력창의 문장을 확인하고 고친 뒤 보내 주세요. 고치지 않으면 이 문장은 평가에서 빠져요."
                   : "말한 내용을 받아 적었어요. 맞는지 확인하고 보내 주세요. 고쳐도 괜찮아요."}
               </p>
             )}
             {stt.error && (
-              <div role="alert" className="flex items-start justify-between gap-3 text-bad">
+              <div
+                role="alert"
+                className="flex items-start justify-between gap-3 text-bad"
+              >
                 <p>{stt.error}</p>
-                <button type="button" className="btn-ghost min-h-8 px-3 text-xs" onClick={stt.clearError}>
+                <button
+                  type="button"
+                  className="btn-ghost min-h-8 px-3 text-xs"
+                  onClick={stt.clearError}
+                >
                   닫기
                 </button>
               </div>
@@ -504,7 +653,11 @@ export function ChatRoom(props: Props) {
               if (!e.target.value.trim()) setVoiceDraft(null);
             }}
             onKeyDown={onKeyDown}
-            placeholder={listening ? "듣는 중…" : "영어로 답하거나 마이크를 눌러 말해 보세요"}
+            placeholder={
+              listening
+                ? "듣는 중…"
+                : "영어로 답해 보세요"
+            }
             disabled={Boolean(pending) || ending === "working" || listening}
             className="input max-h-32 min-h-11 flex-1 resize-none rounded-[1.375rem] py-2.5"
             autoComplete="off"
@@ -514,13 +667,19 @@ export function ChatRoom(props: Props) {
             type="submit"
             className="btn-light h-11 w-11 shrink-0 p-0"
             aria-label="보내기"
-            disabled={!draft.trim() || Boolean(pending) || ending === "working" || listening}
+            disabled={
+              !draft.trim() ||
+              Boolean(pending) ||
+              ending === "working" ||
+              listening
+            }
           >
             <ArrowRight className="text-base" />
           </button>
         </div>
         <p className="mx-auto max-w-3xl px-3 pb-2 text-xs text-muted">
-          Enter로 보내고 Shift+Enter로 줄을 바꿔요. 마이크로 말해도 보내기 전에 한 번 확인할 수 있어요. 홈으로 나가도 대화는 저장돼요.
+          Enter로 보내고 Shift+Enter로 줄을 바꿔요. 마이크로 말해도 보내기 전에
+          한 번 확인할 수 있어요. 홈으로 나가도 대화는 저장돼요.
         </p>
       </form>
     </div>

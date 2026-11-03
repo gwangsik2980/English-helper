@@ -36,8 +36,8 @@ export default async function OnboardingPage() {
             correctionMode: profile.correctionMode,
             dailyMinutes: profile.dailyMinutes,
           }}
-          submitLabel="첫 미션 추천받기"
-          redirectTo="/"
+          submitLabel="다음"
+          redirectTo="/onboarding/check"
         />
       </section>
 

@@ -47,6 +47,14 @@ function logUsage(kind: string, model: string, usage: { input_tokens: number; ou
 
 function toAppError(err: unknown): AppError {
   if (err instanceof AppError) return err;
+  // 402 billing_error: the monthly API credits (e.g. the Max plan's) are used up.
+  if (err instanceof Anthropic.APIError && err.status === 402) {
+    console.error("[ai] Anthropic billing limit reached (402)");
+    return new AppError(
+      "ai_unavailable",
+      "이번 달 AI 사용 한도를 모두 썼어요. 지금까지의 대화는 저장돼 있고, 크레딧이 다시 채워지면 이어서 할 수 있어요.",
+    );
+  }
   if (err instanceof Anthropic.RateLimitError) {
     return new AppError("ai_unavailable", "AI가 잠시 바빠요. 몇 초 뒤에 다시 보내 주세요.");
   }
