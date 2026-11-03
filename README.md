@@ -62,12 +62,14 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 
 ## 배포 (Vercel + Neon)
 
-1. Neon에서 프로젝트를 만들고 Vercel 프로젝트에 연결합니다.
+1. Neon 프로젝트 연결 정보는 `neon.ts`(서비스 선언, Postgres만 사용)와 `.neon`(로컬 링크, git 제외)에 있습니다. `neon login` 후 `neon deploy`를 실행하면 `.env`에 연결 문자열이 들어옵니다.
 2. Vercel 환경 변수에 아래 값을 넣습니다.
    - `DATABASE_URL`: Neon pooled 연결 문자열 (호스트에 `-pooler`가 있는 것)
    - `DATABASE_URL_UNPOOLED`: Neon direct 연결 문자열 (마이그레이션용)
    - `APP_URL`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `MAIL_FROM`
 3. Vercel은 `vercel-build` 스크립트로 빌드합니다. 마이그레이션 적용, 미션 시드, `next build` 순서입니다.
+
+DB 연결은 Prisma가 `pg`(node-postgres) 풀을 `@prisma/adapter-pg`로 쓰고, `@vercel/functions`의 `attachDatabasePool`로 Vercel이 쉬는 인스턴스의 연결을 정리하게 했습니다. Neon 가이드의 Vercel 권장 방식입니다.
 
 Claude를 부르는 API(대화 턴, 미션 완료)는 `maxDuration = 60`으로 최대 60초까지 기다립니다. 2026-11-03에 Opus로 한 번 재 보니 대화 턴은 2~3초, 피드백 분석은 약 12초였습니다. Vercel 무료 플랜 기본 한도 10초는 넘기 때문에 이 설정이 필요합니다.
 

@@ -24,7 +24,10 @@
    - 환경 변수: `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`(운영 필수)
 2. **배포** (5단계): Vercel + Neon으로 결정. 계정 생성과 연결은 사용자가 직접 함
    - 코드 준비 완료: Postgres 전환, 첫 마이그레이션 `prisma/migrations/*_init`, `vercel-build`(마이그레이션 → 시드 → 빌드), 대화·완료 API `maxDuration = 60`
-   - 남은 일: 사용자가 Neon/Vercel 가입 후 환경 변수 입력 → 첫 배포 확인
+   - `neon init` 완료 (org `org-lucky-water-72006918`, project `weathered-rice-27286962`, branch `production`, services postgres). `neon.ts` 생성, `.neon`은 git 제외
+   - DB 드라이버: Prisma + `@prisma/adapter-pg` + `attachDatabasePool` (Neon 스킬의 Vercel 권장)
+   - 막힌 것: 이 클라우드 환경 네트워크가 neon.tech/neon.com을 막아서 `neon login`, `neon deploy` 못 함. 사용자가 허용 도메인에 추가하거나 로컬 PC에서 실행해야 함
+   - 남은 일: `neon login` → `neon deploy`(.env에 연결 문자열) → 실제 Neon DB로 `npm run db:setup`과 동작 확인 → Vercel 연결
    - Resend 키는 사용자가 발급함. 클라우드 환경 변수 또는 Vercel 환경 변수로 받기로 함 (채팅에 붙여 넣지 않기)
    - 휴대폰에서 마이크를 쓰려면 HTTPS가 필요해서 배포(또는 터널)가 있어야 함
 3. main으로 합치는 PR (사용자가 요청하면)
