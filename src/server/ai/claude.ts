@@ -30,6 +30,11 @@ const PartnerOutputSchema = z.object({
   scene_complete: z.boolean(),
 });
 
+/** Token counts only; never conversation text (project logging rule). */
+function logUsage(kind: string, model: string, usage: { input_tokens: number; output_tokens: number }) {
+  console.info(`[ai] ${kind} model=${model} input_tokens=${usage.input_tokens} output_tokens=${usage.output_tokens}`);
+}
+
 function toAppError(err: unknown): AppError {
   if (err instanceof AppError) return err;
   if (err instanceof Anthropic.RateLimitError) {
@@ -73,6 +78,7 @@ export class ClaudePartner implements ConversationPartner {
         betas: [FALLBACK_BETA],
         fallbacks: "default",
       });
+      logUsage("partner", response.model, response.usage);
       if (response.stop_reason === "refusal" || !response.parsed_output) {
         throw new AppError("ai_output_invalid", "AI가 이 문장에 답하지 못했어요. 표현을 바꿔서 다시 보내 주세요.");
       }
@@ -106,6 +112,7 @@ export class ClaudeFeedbackAnalyzer implements FeedbackAnalyzer {
         fallbacks: "default",
       });
       const response = await stream.finalMessage();
+      logUsage("feedback", response.model, response.usage);
       if (response.stop_reason === "refusal") {
         throw new AppError("ai_output_invalid", "피드백을 만들지 못했어요.");
       }
