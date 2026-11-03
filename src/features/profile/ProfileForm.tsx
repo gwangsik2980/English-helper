@@ -34,10 +34,13 @@ export function ProfileForm({
   initial,
   submitLabel,
   redirectTo,
+  compact = false,
 }: {
   initial: Initial;
   submitLabel: string;
   redirectTo?: string;
+  /** Settings: hide the onboarding help lines. */
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<Initial>(initial);
@@ -128,11 +131,13 @@ export function ProfileForm({
                 {form.level === l ? "● " : "○ "}
                 {LEVEL_LABEL_KO[l]}
               </span>
-              <span className="mt-1 block text-sm text-muted">{LEVEL_HELP[l]}</span>
+              {!compact && <span className="mt-1 block text-sm text-muted">{LEVEL_HELP[l]}</span>}
             </label>
           ))}
         </div>
-        <p className="mt-2 text-sm text-muted">스스로 고른 수준은 출발점일 뿐이에요. 대화가 쌓이면 추천이 함께 조정돼요.</p>
+        {!compact && (
+          <p className="mt-2 text-sm text-muted">스스로 고른 수준은 출발점일 뿐이에요. 대화가 쌓이면 추천이 함께 조정돼요.</p>
+        )}
       </fieldset>
 
       <fieldset>

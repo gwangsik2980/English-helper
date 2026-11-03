@@ -12,8 +12,10 @@ import { completeSession, getFeedback } from "@/server/services/feedback";
 import { saveProfile } from "@/server/services/profile";
 import { recommendMissions } from "@/server/services/recommend";
 import { completeReviewItem, saveReviewItem } from "@/server/services/review";
-import { addTurn, getSession, startSession } from "@/server/services/sessions";
+import { addTurn, discardSession, getSession, startSession, undoLastUserTurn } from "@/server/services/sessions";
 import { xpSummary } from "@/server/services/xp";
+import { addPhrase, deletePhrase, listPhrases } from "@/server/services/phrases";
+import { expressionUsage } from "@/server/services/expression-usage";
 
 async function newUser() {
   const { userId } = await signUp({ email: `u-${randomUUID()}@example.test`, password: "password123" });
@@ -231,5 +233,75 @@ describe("account deletion", () => {
     expect(await prisma.learningSession.count({ where: { userId } })).toBe(0);
     expect(await prisma.turn.count({ where: { sessionId } })).toBe(0);
     expect(await prisma.xpEvent.count({ where: { userId } })).toBe(0);
+  });
+});
+
+describe("fixing and discarding a conversation", () => {
+  it("takes back the last learner line with its reply, only in the owner's open session", async () => {
+    const userId = await newUser();
+    const { sessionId } = await startSession(userId, "cafe-order");
+    await say(userId, sessionId, "Could I have a latte?");
+    await say(userId, sessionId, "Medium, plese.");
+
+    const other = await newUser();
+    await expectNotFound(undoLastUserTurn(other, sessionId));
+
+    expect(await undoLastUserTurn(userId, sessionId)).toEqual({ text: "Medium, plese." });
+    const after = await getSession(userId, sessionId);
+    expect(after.turns.map((t) => t.speaker)).toEqual(["ai", "user", "ai"]);
+
+    // The fixed line takes the freed place and gets a fresh reply.
+    await say(userId, sessionId, "Medium, please.");
+    expect((await getSession(userId, sessionId)).turns.at(-2)?.text).toBe("Medium, please.");
+
+    await completeSession(userId, sessionId);
+    await expect(undoLastUserTurn(userId, sessionId)).rejects.toSatisfy(
+      (e: unknown) => e instanceof AppError && e.code === "session_closed",
+    );
+  });
+
+  it("deletes an open session without feedback, but never a finished one", async () => {
+    const userId = await newUser();
+    const { sessionId } = await startSession(userId, "cafe-order");
+    await say(userId, sessionId, "Could I have a latte?");
+    await expectNotFound(discardSession(await newUser(), sessionId));
+
+    await discardSession(userId, sessionId);
+    expect(await prisma.learningSession.count({ where: { id: sessionId } })).toBe(0);
+    expect(await prisma.turn.count({ where: { sessionId } })).toBe(0);
+
+    const done = await startSession(userId, "cafe-order");
+    await say(userId, done.sessionId, "Could I have a latte with oat milk?");
+    await completeSession(userId, done.sessionId);
+    await expect(discardSession(userId, done.sessionId)).rejects.toSatisfy(
+      (e: unknown) => e instanceof AppError && e.code === "session_closed",
+    );
+  });
+});
+
+describe("phrasebook", () => {
+  it("keeps each learner's phrases private and spots them in a finished conversation", async () => {
+    const userId = await newUser();
+    const p = await addPhrase(userId, { phrase: "I was wondering if ~", meaningKo: "혹시 ~할 수 있을까" });
+    await expect(addPhrase(userId, { phrase: "i was wondering if ~!" })).rejects.toSatisfy(
+      (e: unknown) => e instanceof AppError && e.code === "conflict",
+    );
+    await expect(addPhrase(userId, { phrase: "~ ..." })).rejects.toSatisfy(
+      (e: unknown) => e instanceof AppError && e.code === "invalid_input",
+    );
+
+    const other = await newUser();
+    expect(await listPhrases(other)).toEqual([]);
+    await expectNotFound(deletePhrase(other, p.id));
+
+    const usage = await expressionUsage(userId, "cafe-order", [
+      "Could I get a latte?",
+      "I was wondering if I could get oat milk.",
+    ]);
+    expect(usage.key.find((e) => e.en === "Could I get ~?")?.used).toBe(true);
+    expect(usage.myPhrasesUsed.map((x) => x.phrase)).toEqual(["I was wondering if ~"]);
+
+    await deletePhrase(userId, p.id);
+    expect(await listPhrases(userId)).toEqual([]);
   });
 });

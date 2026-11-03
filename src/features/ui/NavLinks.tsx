@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const LINKS = [
   { href: "/", label: "홈", icon: "⌂" },
   { href: "/missions", label: "미션", icon: "◎" },
+  { href: "/phrases", label: "표현장", icon: "✎" },
   { href: "/progress", label: "성장 기록", icon: "↗" },
   { href: "/settings", label: "설정", icon: "⚙" },
 ];
@@ -47,7 +48,7 @@ export function BottomNav() {
       aria-label="주요 메뉴"
       className="glass-bar fixed inset-x-3 bottom-3 z-20 rounded-full p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] md:hidden"
     >
-      <ul className="grid grid-cols-4 gap-1">
+      <ul className="grid grid-cols-5 gap-1">
         {LINKS.map((l) => {
           const active = isActive(pathname, l.href);
           return (

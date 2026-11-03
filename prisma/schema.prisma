@@ -28,6 +28,7 @@ model User {
   missionProgress UserMissionProgress[]
   xpEvents        XpEvent[]
   reviewItems     ReviewItem[]
+  phrases         Phrase[]
   reports         FeedbackReport[]
 }
 
@@ -217,4 +218,17 @@ model FeedbackReport {
 
   user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+/// Learner's own phrasebook: expressions they picked up elsewhere and want to use in missions.
+model Phrase {
+  id        String   @id @default(uuid())
+  userId    String
+  phrase    String
+  meaningKo String   @default("")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }

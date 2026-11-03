@@ -10,7 +10,8 @@ import { useEffect, type RefObject } from "react";
  * becomes draggable, so a swipe on the conversation drags the screen
  * (header and input included) up into empty space. Here the chat is fixed
  * to the visual viewport, the page behind it is locked, and only the
- * message list (and a long draft in the textarea) can scroll.
+ * message list, a long draft in the textarea and panels marked
+ * `data-scroll` can scroll.
  */
 export function useChatViewport(
   rootRef: RefObject<HTMLElement | null>,
@@ -34,7 +35,7 @@ export function useChatViewport(
 
     const onTouchMove = (e: TouchEvent) => {
       const target = e.target instanceof Element ? e.target : null;
-      if (target && (scrollRef.current?.contains(target) || target.closest("textarea"))) return;
+      if (target && (scrollRef.current?.contains(target) || target.closest("textarea, [data-scroll]"))) return;
       e.preventDefault();
     };
     document.addEventListener("touchmove", onTouchMove, { passive: false });

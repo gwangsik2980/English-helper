@@ -63,6 +63,7 @@ export async function exportAccountData(userId: string) {
       sessions: { include: { turns: true, feedback: true, mission: { select: { title: true } } } },
       xpEvents: true,
       reviewItems: true,
+      phrases: true,
       skillObs: true,
     },
   });
