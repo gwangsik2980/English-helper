@@ -22,11 +22,11 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 | 데모 | `ANTHROPIC_API_KEY` 비어 있음 | 미션별로 정해진 대사 | 키워드·규칙 기반 판정 | 없음 |
 | Claude | `.env`에 `ANTHROPIC_API_KEY` 설정 | Claude가 역할극 | Claude가 구조화된 JSON으로 분석 | API 사용량만큼 과금 |
 
-모델은 기본 `claude-opus-5-5`이고, `.env`의 `CLAUDE_MODEL`로 바꿀 수 있습니다. 대화 상대와 피드백 분석을 다른 모델로 돌리려면 `CLAUDE_PARTNER_MODEL`, `CLAUDE_FEEDBACK_MODEL`을 따로 지정합니다.
+모델은 기본 `claude-opus-5-5`이고, `.env`의 `CLAUDE_MODEL`로 바꿀 수 있습니다. 대화 상대와 피드백 분석을 다른 모델로 돌리려면 `CLAUDE_PARTNER_MODEL`, `CLAUDE_FEEDBACK_MODEL`을 따로 지정합니다. 데모 모드에서는 화면 상단에 노란 안내 띠가 보입니다.
 
 ### 음성
 
-브라우저 내장 Web Speech API를 써서 추가 비용이 없습니다. 말하기(음성 인식)는 Chrome, Edge, Safari에서 되고 Firefox에서는 안 됩니다. 듣기(소리로 읽기)는 대부분의 브라우저에서 됩니다. 음성은 서버로 오지 않고, 받아 적은 문장과 인식 확신도만 저장합니다. 확신도가 0.5 미만이고 사용자가 고치지 않은 문장은 평가에서 뺍니다. 데모 모드에서는 화면 상단에 노란 안내 띠가 보입니다.
+브라우저 내장 Web Speech API를 써서 추가 비용이 없습니다. 말하기(음성 인식)는 Chrome, Edge, Safari에서 되고 Firefox에서는 안 됩니다. 듣기(소리로 읽기)는 대부분의 브라우저에서 됩니다. 음성은 서버로 오지 않고, 받아 적은 문장과 인식 확신도만 저장합니다. 확신도가 0.5 미만이고 사용자가 고치지 않은 문장은 평가에서 뺍니다.
 
 ## 구조
 
@@ -34,7 +34,7 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 prisma/schema.prisma        데이터 모델 (명세 8장)
 prisma/seed.ts              미션 시드
 src/app/                    페이지와 API 라우트 (명세 9장 경로)
-src/features/               화면 컴포넌트 (missions, conversation, progress, profile, settings)
+src/features/               화면 컴포넌트 (missions, conversation, voice, progress, profile, settings)
 src/server/ai/              LLM 어댑터: ports.ts(인터페이스), claude.ts, mock.ts(데모), prompts.ts
 src/server/services/        도메인 규칙: 세션, 피드백 검증, XP 원장, 복습, 추천, 계정
 src/server/missions/        미션 카탈로그 초안 8개
