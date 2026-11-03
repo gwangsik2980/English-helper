@@ -67,6 +67,8 @@
 }
 
 html {
+  /* Scroll yes, pinch or double-tap zoom no (see NoPinchZoom). */
+  touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
 }
