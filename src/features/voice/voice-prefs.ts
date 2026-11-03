@@ -13,13 +13,15 @@ export type VoicePrefs = {
   rate: number;
   /** Prefer online voices that sound more natural but start a second or two later. */
   naturalVoice: boolean;
+  /** A voice the learner picked in settings (voiceURI); null = choose automatically. */
+  voiceURI: string | null;
   /** The learner has seen the microphone purpose notice. */
   micIntroSeen: boolean;
 };
 
 const KEY = "eq.voice.v1";
 const EVENT = "eq-voice-prefs";
-const DEFAULTS: VoicePrefs = { autoRead: false, rate: 1, naturalVoice: false, micIntroSeen: false };
+const DEFAULTS: VoicePrefs = { autoRead: false, rate: 1, naturalVoice: false, voiceURI: null, micIntroSeen: false };
 
 // In-memory fallback when storage is blocked (private mode etc.).
 let memory: string | null = null;

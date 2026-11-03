@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pickEnglishVoice, type VoiceLike } from "@/features/voice/voice-choice";
+import { englishVoices, pickEnglishVoice, type VoiceLike } from "@/features/voice/voice-choice";
 
 const v = (name: string, lang: string, localService: boolean, isDefault = false, voiceURI?: string): VoiceLike => ({
   name,
@@ -52,5 +52,14 @@ describe("pickEnglishVoice", () => {
   it("falls back to an online voice when no on-device English voice exists, and to null when none at all", () => {
     expect(pickEnglishVoice([v("Google US English", "en-US", false)], false)?.name).toBe("Google US English");
     expect(pickEnglishVoice([v("Yuna", "ko-KR", true)], false)).toBeNull();
+  });
+
+  it("lists English voices for the picker with high-quality ones first and no joke voices", () => {
+    const list = englishVoices([
+      ...iphone,
+      v("Ava", "en-US", true, false, "com.apple.voice.premium.en-US.Ava"),
+      v("Daniel", "en-GB", true),
+    ]);
+    expect(list.map((x) => x.name)).toEqual(["Ava", "Samantha", "Daniel"]);
   });
 });

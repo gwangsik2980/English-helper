@@ -150,7 +150,7 @@ export function ChatRoom(props: Props) {
       ]);
       setSceneComplete(res.sceneComplete);
       setPending(null);
-      if (prefs.autoRead) tts.speak(res.aiTurn.id, res.aiTurn.text, prefs.rate, prefs.naturalVoice);
+      if (prefs.autoRead) tts.speak(res.aiTurn.id, res.aiTurn.text, prefs.rate, prefs.naturalVoice, prefs.voiceURI);
       inputRef.current?.focus();
     } catch (err) {
       const message =
@@ -441,7 +441,7 @@ export function ChatRoom(props: Props) {
                   onClick={() =>
                     tts.speakingId === t.id
                       ? tts.stop()
-                      : tts.speak(t.id, t.text, prefs.rate, prefs.naturalVoice)
+                      : tts.speak(t.id, t.text, prefs.rate, prefs.naturalVoice, prefs.voiceURI)
                   }
                   className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-muted hover:text-text"
                   aria-label={
