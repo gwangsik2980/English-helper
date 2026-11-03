@@ -17,7 +17,7 @@ import {
   useSpeechRecognition,
   type RecognitionResult,
 } from "@/features/voice/speech-recognition";
-import { useSpeechSynthesis } from "@/features/voice/speech-synthesis";
+import { primeAudio, useSpeechSynthesis } from "@/features/voice/speech-synthesis";
 import { useVoicePrefs } from "@/features/voice/voice-prefs";
 import { api, ApiError } from "@/shared/api-client";
 import { usesPattern } from "@/shared/expressions";
@@ -54,6 +54,8 @@ type Props = {
   /** Mission key expressions and the learner's own phrasebook ({ en: pattern, ko: meaning }). */
   keyExpressions: { en: string; ko: string }[];
   myPhrases: { en: string; ko: string }[];
+  /** The server can voice partner lines with Google's natural voices. */
+  cloudVoice: boolean;
   initialTurns: ChatTurn[];
   initialSceneComplete: boolean;
 };
@@ -86,7 +88,7 @@ export function ChatRoom(props: Props) {
 
   // ---- Voice (stage 4): free browser speech, text always remains the main path.
   const { prefs, update: updatePrefs } = useVoicePrefs();
-  const tts = useSpeechSynthesis();
+  const tts = useSpeechSynthesis({ cloud: props.cloudVoice });
   /** The draft came from speech; kept so we know whether the learner edited it. */
   const [voiceDraft, setVoiceDraft] = useState<RecognitionResult | null>(null);
   const [micNotice, setMicNotice] = useState<"none" | "intro" | "unsupported">(
@@ -106,6 +108,7 @@ export function ChatRoom(props: Props) {
 
   function onMicClick() {
     tts.stop();
+    primeAudio();
     if (listening) {
       stt.stop();
       return;
@@ -166,6 +169,8 @@ export function ChatRoom(props: Props) {
     e?.preventDefault();
     const text = draft.trim();
     if (!text || pending || listening) return;
+    // This tap lets the reply's audio play automatically on iPhone.
+    if (prefs.autoRead) primeAudio();
     // A transcript the learner edited is their own confirmed text, so its
     // recognizer confidence no longer applies.
     const fromVoice = voiceDraft !== null;
