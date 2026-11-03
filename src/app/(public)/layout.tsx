@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { FloatingBits } from "@/features/ui/FloatingBits";
 import { FluidMode } from "@/features/ui/FluidBackground";
 import { LogoMark } from "@/features/ui/Icons";
-import { optionalPageUser } from "@/server/http";
 
 const BITS = [
   { text: "Could I have a latte?", top: "16%", left: "46%", size: "md" as const },
@@ -12,7 +10,6 @@ const BITS = [
 ];
 
 export default async function PublicLayout({ children }: { children: ReactNode }) {
-  if (await optionalPageUser()) redirect("/");
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
       <FluidMode mode="hero" />

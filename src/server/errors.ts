@@ -7,7 +7,9 @@ export type AppErrorCode =
   | "rate_limited"
   | "session_closed"
   | "ai_unavailable"
-  | "ai_output_invalid";
+  | "ai_output_invalid"
+  | "service_unavailable"
+  | "token_invalid";
 
 const STATUS: Record<AppErrorCode, number> = {
   unauthorized: 401,
@@ -19,6 +21,8 @@ const STATUS: Record<AppErrorCode, number> = {
   session_closed: 409,
   ai_unavailable: 503,
   ai_output_invalid: 502,
+  service_unavailable: 503,
+  token_invalid: 400,
 };
 
 /** Domain error with a Korean, user-facing message that says what to do next. */

@@ -19,6 +19,7 @@ model User {
 
   profile         UserProfile?
   authSessions    AuthSession[]
+  resetTokens     PasswordResetToken[]
   sessions        LearningSession[]
   skillObs        SkillObservation[]
   missionProgress UserMissionProgress[]
@@ -36,6 +37,19 @@ model AuthSession {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+/// One-time password reset link. Only the SHA-256 of the token is stored.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model UserProfile {

@@ -1,7 +1,7 @@
 # 작업 인수인계 (다음 세션용)
 
 새 세션은 이 문서와 `CLAUDE.md`, `README.md`를 먼저 읽고 시작한다.
-작업 브랜치: `claude/laughing-dirac-yd3y27` (main에는 아직 합치지 않음)
+작업 브랜치: `claude/dreamy-brahmagupta-gf2yoq` (`claude/laughing-dirac-yd3y27`에서 이어서 작업, main에는 아직 합치지 않음)
 
 ## 현재 상태
 
@@ -9,15 +9,18 @@
 - 배포 전 정리 완료: 피드백 대기 진행 화면, 온보딩 레벨 확인(선택 5문항), API 크레딧 소진(402) 안내
 - 디자인: 구조는 Lumora, 분위기는 Flowstate (검은 바탕 + WebGL 잉크 배경, 흰 알약 버튼)
   - 잉크 모드: 로그인 `hero`, 일반 화면 기본(어둡게), 대화/결과 `calm`
-- 점검: `npm run typecheck`, `npm run lint`, `npm test`(24개), `npm run build` 모두 통과
+- 비밀번호 재설정 완료: 메일 어댑터(`src/server/mail`, Resend REST + 개발용 콘솔), 서비스 `src/server/services/password-reset.ts`, 화면 `/forgot-password`, `/reset-password`
+  - 토큰 해시만 저장, 1회용, 30분 만료, 새 요청 시 이전 링크 만료, 사용 시 모든 로그인 세션 폐기
+  - 계정 존재 여부 비노출 (조회와 발송을 `after()`로 응답 뒤에 처리), IP당 15분 5회 + 계정당 1시간 3통
+  - 로그인 상태로도 재설정 링크를 열 수 있게 `(public)` 레이아웃의 로그인 리다이렉트를 로그인·가입·비밀번호 찾기 페이지로 옮김
+- 점검: `npm run typecheck`, `npm run lint`, `npm test`(31개), `npm run build` 모두 통과. Playwright로 재설정 전체 흐름 확인
 
 ## 다음 할 일 (사용자 확정 순서)
 
-1. **비밀번호 재설정** (사용자가 넣기로 결정)
-   - 메일 발송 서비스가 필요하다. 후보: Resend 무료 구간 (조건 미확인, 확인 후 사용자에게 안내)
-   - 메일 발송은 서버 어댑터 뒤에 두고, 키가 없으면 개발용으로 콘솔에 재설정 링크만 출력
-   - 토큰: 무작위 값의 해시만 DB 저장, 1회용, 30분 만료, 사용 시 기존 로그인 세션 모두 폐기
-   - 존재하지 않는 이메일에도 같은 응답 (계정 존재 여부 노출 금지), 요청 속도 제한
+1. **Resend 실제 발송 연결** (사용자 작업)
+   - 무료 구간: 월 3,000통, 하루 100통 (검색 결과 요약 기준, resend.com은 이 환경 네트워크에서 막혀 직접 확인 못 함)
+   - `onboarding@resend.dev` 발신은 Resend 계정 본인 메일로만 감. 다른 사람에게 보내려면 도메인 DNS 인증 필요
+   - 환경 변수: `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`(운영 필수)
 2. **배포** (5단계): Vercel + Postgres(Neon 등). 계정 생성과 연결은 사용자가 직접 함
    - `prisma/schema.prisma` provider를 `postgresql`로, 마이그레이션 방식 정리
    - 휴대폰에서 마이크를 쓰려면 HTTPS가 필요해서 배포(또는 터널)가 있어야 함

@@ -20,6 +20,11 @@ export async function optionalPageUser(): Promise<string | null> {
   return userIdFromToken(token);
 }
 
+/** For login/signup pages: signed-in users go straight to the app. */
+export async function redirectIfSignedIn() {
+  if (await optionalPageUser()) redirect("/");
+}
+
 async function requireApiUser(req: NextRequest): Promise<string> {
   const userId = await userIdFromToken(req.cookies.get(AUTH_COOKIE)?.value);
   if (!userId) throw new AppError("unauthorized", "로그인이 필요해요. 다시 로그인해 주세요.");
@@ -128,4 +133,22 @@ export function rateLimit(key: string, max: number, windowMs: number) {
   if (bucket.count > max) {
     throw new AppError("rate_limited", "너무 빠르게 보내고 있어요. 잠시 후 다시 보내 주세요.");
   }
+}
+
+export function clientIp(req: NextRequest) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+}
+
+/**
+ * Base URL for links sent by mail. Production must set APP_URL: building the
+ * link from the Host header would let an attacker point a victim's reset
+ * link at their own domain.
+ */
+export function appBaseUrl(req: NextRequest): string {
+  const configured = process.env.APP_URL?.trim();
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") {
+    throw new AppError("service_unavailable", "메일 발송 설정이 끝나지 않았어요. 관리자에게 알려 주세요.");
+  }
+  return req.nextUrl.origin;
 }

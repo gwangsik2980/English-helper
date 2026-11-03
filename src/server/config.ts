@@ -31,6 +31,17 @@ export const SKILL_CONFIDENCE_FLOOR = 0.5;
 export const AUTH_SESSION_DAYS = 30;
 export const AUTH_COOKIE = "eq_session";
 
+export const PASSWORD_RESET = {
+  /** Link lifetime. */
+  ttlMs: 30 * 60 * 1000,
+  /** Mails per account per window, so nobody can flood someone's inbox. */
+  perUserMax: 3,
+  perUserWindowMs: 60 * 60 * 1000,
+  /** Requests per IP per window (both request and confirm endpoints). */
+  perIpMax: 5,
+  perIpWindowMs: 15 * 60 * 1000,
+} as const;
+
 export const TURN_RATE_LIMIT = { windowMs: 60_000, max: 20 } as const;
 
 export const MAX_TURNS_PER_SESSION = 40;

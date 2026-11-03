@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ArrowBadge } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 
-export function AuthForm({ mode }: { mode: "login" | "signup" }) {
+export function AuthForm({ mode, notice }: { mode: "login" | "signup"; notice?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,9 +49,16 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         />
       </div>
       <div>
-        <label htmlFor="password" className="label">
-          비밀번호
-        </label>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="password" className="label">
+            비밀번호
+          </label>
+          {!isSignup && (
+            <Link href="/forgot-password" className="text-sm text-muted underline-offset-2 hover:text-accent hover:underline">
+              비밀번호를 잊으셨나요?
+            </Link>
+          )}
+        </div>
         <input
           id="password"
           type="password"
@@ -69,6 +76,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </p>
         )}
       </div>
+      {notice && !error && (
+        <p role="status" className="rounded-[0.875rem] bg-ok-soft px-3 py-2 text-sm text-ok">
+          {notice}
+        </p>
+      )}
       {error && (
         <p role="alert" className="rounded-[0.875rem] bg-bad-soft px-3 py-2 text-sm text-bad">
           {error}
