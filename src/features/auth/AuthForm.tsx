@@ -31,7 +31,6 @@ export function AuthForm({ mode, notice }: { mode: "login" | "signup"; notice?: 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <div className="reveal mb-8">
-        {isSignup && <p className="eyebrow-accent mb-2">처음 시작하기</p>}
         <h2 className="display text-3xl">{isSignup ? "계정 만들기" : "로그인"}</h2>
       </div>
       <div>
