@@ -60,6 +60,18 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
 - 로그인한 상태에서는 설정 > 계정 보안에서 지금 비밀번호를 확인한 뒤 바꿀 수 있습니다. 이 기기는 로그인이 유지되고 다른 기기 로그인과 남아 있던 재설정 링크는 무효가 됩니다.
 - 운영에서는 `APP_URL`이 꼭 있어야 합니다. 요청의 Host 헤더로 링크를 만들면 공격자가 링크 주소를 자기 도메인으로 바꿀 수 있어서입니다.
 
+### 상대 목소리 (Google Cloud TTS)
+
+| 조건 | 동작 |
+|---|---|
+| `GOOGLE_TTS_API_KEY` 비어 있음 | 브라우저 내장 음성으로 읽음 (무료, 기기마다 다름) |
+| `GOOGLE_TTS_API_KEY` 설정 | Chirp 3 HD 목소리 MP3를 `/api/speech`에서 받아 재생. 실패하면 브라우저 음성으로 |
+
+- 요금: Chirp 3 HD는 매달 100만 글자까지 무료 ([공식 가격표](https://cloud.google.com/text-to-speech/pricing)).
+- 내 대화의 상대 대사(저장된 AI 턴)만 읽을 수 있고, 남의 턴은 404입니다. 임의 문장으로 할당량을 쓰지 못하게 하기 위해서입니다.
+- 사용자당 10분에 40번까지. 같은 기기는 브라우저 캐시로 다시 들을 때 요청하지 않습니다.
+- 키는 요청 헤더로만 보내고, 키와 문장은 로그에 남기지 않습니다.
+
 ## 배포 (Vercel + Neon)
 
 1. Neon 프로젝트 연결 정보는 `neon.ts`(서비스 선언, Postgres만 사용)와 `.neon`(로컬 링크, git 제외)에 있습니다. `neon login` 후 `neon deploy`를 실행하면 `.env`에 연결 문자열이 들어옵니다.
@@ -67,6 +79,7 @@ http://localhost:3000 에서 회원가입하면 바로 쓸 수 있습니다.
    - `DATABASE_URL`: Neon pooled 연결 문자열 (호스트에 `-pooler`가 있는 것)
    - `DATABASE_URL_UNPOOLED`: Neon direct 연결 문자열 (마이그레이션용)
    - `APP_URL`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `MAIL_FROM`
+   - (선택) `GOOGLE_TTS_API_KEY`: 상대 대사를 Google 목소리로 읽음
 3. 서버 함수 지역은 `vercel.json`에서 싱가포르(`sin1`)로 고정했습니다. Neon DB가 `ap-southeast-1`(싱가포르)에 있어서, 기본값인 미국 동부에서 돌리면 쿼리마다 태평양을 왕복합니다.
 4. Vercel은 `vercel-build` 스크립트로 빌드합니다. 마이그레이션 적용, 미션 시드, `next build` 순서입니다.
 

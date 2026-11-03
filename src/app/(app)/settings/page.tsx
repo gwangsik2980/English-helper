@@ -2,6 +2,7 @@ import { ProfileForm } from "@/features/profile/ProfileForm";
 import { ChangePassword, DeleteAccount, LogoutButton } from "@/features/settings/AccountActions";
 import { VoiceSettings } from "@/features/voice/VoiceSettings";
 import { requirePageUser } from "@/server/http";
+import { cloudVoiceEnabled } from "@/server/tts/google";
 import { getProfile } from "@/server/services/profile";
 
 export const metadata = { title: "설정 · ENGLISH QUEST" };
@@ -42,7 +43,7 @@ export default async function SettingsPage() {
         <h2 id="voice-title" className="section-title">
           음성
         </h2>
-        <VoiceSettings />
+        <VoiceSettings cloud={cloudVoiceEnabled()} />
       </section>
 
       <section aria-labelledby="privacy-title" className="card reveal space-y-4 sm:p-8">

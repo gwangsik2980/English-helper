@@ -50,6 +50,13 @@
   - 시스템 기본 음성 설정은 웹 음성에 영향 없음. 앱은 `getVoices()` 목록에서 직접 고름
   - 설정 > 음성에 목소리 목록(영어만, 고품질 먼저)과 `들어 보기`. 선택값은 `voiceURI`로 localStorage에 저장, 그 기기에 없으면 자동 선택으로
   - 목록에 고품질이 없으면 "브라우저가 그 음성을 웹에 안 열어 줌" 안내. 사파리가 Ava를 넘겨주는지는 사용자 확인 대기
+- Google Cloud TTS 목소리 (사용자 선택: Google. 아이폰 사파리는 받아 둔 Ava 프리미엄을 웹에 안 넘겨줌, 목록 6개가 모두 저용량)
+  - 서버 `src/server/tts/google.ts`(REST, `X-Goog-Api-Key` 헤더, `GOOGLE_TTS_API_KEY`), `src/server/services/speech.ts`, `GET /api/speech?turnId|preview=1&voice=`
+  - 내 대화의 AI 턴만 읽음(남의 것·내 말은 404), 사용자당 10분 40회, 응답 `Cache-Control: private, immutable`
+  - 목소리 Chirp 3 HD `Aoede`(기본)·`Kore`·`Charon`·`Puck` (`src/shared/cloud-voices.ts`). 느리게는 클라이언트 `playbackRate`
+  - 클라이언트: 공유 `<audio>` 하나, 보내기·마이크 탭에서 `primeAudio()`로 아이폰 자동 재생 허용. 실패하면 기기 음성으로 한 번만 전환
+  - 키가 없으면 예전과 같음. 공식 가격: Chirp 3 HD 월 100만 글자 무료 (cloud.google.com/text-to-speech/pricing, 2026-11-03 확인)
+  - **아직 확인 안 됨**: 사용자가 키를 Vercel에 넣은 뒤 실제 Google 응답, 아이폰 자동 읽기
 - 저작권 표시 `© 2026 GWANG. All rights reserved.` (`src/features/ui/SiteFooter.tsx`)
   - 앱 화면, 로그인·가입·비밀번호 찾기, 온보딩 맨 아래. 대화 화면은 입력창과 겹쳐서 제외
 - 로그인·가입 화면 정리: 제목 위 작은 문구("다시 오셨네요", "처음 시작하기")와 로그인 아래 데이터 안내 문장 삭제 (사용자 요청. 데이터 안내는 온보딩·설정에 남아 있음)

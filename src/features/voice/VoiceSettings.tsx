@@ -1,6 +1,7 @@
 "use client";
 
-import { useSpeechSynthesis } from "./speech-synthesis";
+import { CLOUD_PREFIX, CLOUD_VOICES } from "@/shared/cloud-voices";
+import { cloudVoiceFor, useSpeechSynthesis } from "./speech-synthesis";
 import { isHighQuality } from "./voice-choice";
 import { useVoicePrefs } from "./voice-prefs";
 
@@ -16,9 +17,12 @@ const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean;
   </label>
 );
 
-export function VoiceSettings() {
+/** cloud: the server can voice lines with Google (natural voices). */
+export function VoiceSettings({ cloud = false }: { cloud?: boolean }) {
   const { prefs, update } = useVoicePrefs();
-  const tts = useSpeechSynthesis();
+  const tts = useSpeechSynthesis({ cloud });
+  const cloudVoice = cloudVoiceFor(cloud, prefs.voiceURI);
+  const cloudLabel = CLOUD_VOICES.find((c) => c.id === cloudVoice)?.labelKo;
   const voice = tts.supported ? tts.voiceFor(prefs.naturalVoice, prefs.voiceURI) : null;
   const upgraded = voice ? isHighQuality(voice) : false;
   const hasHighQuality = tts.choices.some(isHighQuality);
@@ -53,17 +57,28 @@ export function VoiceSettings() {
               onChange={(e) => update({ voiceURI: e.target.value || null })}
             >
               <option value="">자동으로 고르기</option>
-              {tts.choices.map((v) => (
-                <option key={v.voiceURI} value={v.voiceURI}>
-                  {v.name} · {v.lang}
-                  {isHighQuality(v) ? " · 고품질" : ""}
-                </option>
-              ))}
+              {cloud && (
+                <optgroup label="자연스러운 목소리">
+                  {CLOUD_VOICES.map((c) => (
+                    <option key={c.id} value={`${CLOUD_PREFIX}${c.id}`}>
+                      {c.labelKo}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              <optgroup label="기기 목소리">
+                {tts.choices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} · {v.lang}
+                    {isHighQuality(v) ? " · 고품질" : ""}
+                  </option>
+                ))}
+              </optgroup>
             </select>
             <button
               type="button"
               className="btn-secondary shrink-0"
-              disabled={!voice}
+              disabled={!voice && !cloudVoice}
               onClick={() =>
                 tts.speakingId === "preview"
                   ? tts.stop()
@@ -77,16 +92,20 @@ export function VoiceSettings() {
         <p>
           <span className="text-muted">지금 목소리 </span>
           <span className="font-semibold" lang="en">
-            {voice ? voice.name : "영어 목소리를 찾는 중이거나 이 기기에 없어요"}
+            {cloudLabel ?? (voice ? voice.name : "영어 목소리를 찾는 중이거나 이 기기에 없어요")}
           </span>
-          {upgraded && <span className="text-muted"> · 고품질</span>}
+          {cloudLabel ? (
+            <span className="text-muted"> · 자연스러운 목소리</span>
+          ) : (
+            upgraded && <span className="text-muted"> · 고품질</span>
+          )}
         </p>
         {tts.error && (
           <p role="alert" className="text-bad">
             {tts.error}
           </p>
         )}
-        {tts.choices.length > 0 && !hasHighQuality && (
+        {!cloud && tts.choices.length > 0 && !hasHighQuality && (
           <p className="text-muted">
             이 브라우저가 넘겨준 영어 목소리 {tts.choices.length}개 중에 고품질 음성이 없어요. 기기에 받아 둔 음성이 목록에 없다면
             브라우저가 웹사이트에 그 음성을 열어 주지 않는 거예요.
