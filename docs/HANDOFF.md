@@ -23,7 +23,8 @@
   - 실제 Opus 재현: 중간 수준 대화 → 성장 중 0.55~0.6, 잘한 대화 → 능숙 0.65~0.8. 단계와 확신도가 갈라짐
 - 홈 화면 앱: `src/app/manifest.ts`(이름 QUEST, standalone), `public/icon-*.png`, `src/app/apple-icon.png`, `layout.tsx`의 `appleWebApp`
   - 아이콘은 메인 화면 엠블럼(`LogoMark` 별)을 검은 바탕에 흰색으로 그린 PNG. 다시 만들려면 같은 SVG path를 Playwright로 캡처
-- 점검: `npm run typecheck`, `npm run lint`, `npm test`(35개), `npm run build` 모두 통과. 실제 Claude로 미션 → 결과 화면 확인
+- 로컬 Postgres가 세션 중에 꺼질 수 있음. 테스트가 global-setup에서 실패하면 `service postgresql start`
+- 점검: `npm run typecheck`, `npm run lint`, `npm test`(39개), `npm run build` 모두 통과. 실제 Claude로 미션 → 결과 화면 확인
 
 ## 배포 상태 (2026-11-03)
 
@@ -39,11 +40,11 @@
   - Vercel 함수 지역 `sin1`, GitHub 기본 브랜치 `main` (사용자 확인)
 - 아직 확인 안 됨
   - **휴대폰 마이크 음성 입력: 사용자가 집에서 실제 기기로 테스트 예정. 결과 받으면 반영**
-  - 사용자 보고: 듣기 버튼을 누르면 약 2초 뒤에 소리가 남. 브라우저 내장 음성(OS 음성 엔진)의 시작 지연으로 추정. 기기·브라우저 확인 필요
+  - 사용자 보고: 듣기 버튼을 누르면 약 2초 뒤에 소리가 남 (아이폰 사파리, PC 크롬·엣지). 온라인 음성을 우선 고르던 코드가 원인으로 추정해 C안으로 수정 (`src/features/voice/voice-choice.ts`)
 
 ## 다음 할 일
 
-1. 듣기 지연: 사용자 기기는 아이폰 사파리, PC 크롬·엣지. 코드가 natural/google 이름 음성을 우선하는데 크롬 Google 음성과 엣지 Online (Natural) 음성은 네트워크 음성이라 지연 원인으로 추정. 기기 내장 음성 우선으로 바꿀지 사용자 결정 대기
+1. 듣기 지연 개선(C안)을 사용자 확인 후 main에 반영: 기본은 기기 내장 음성, 설정 > 음성의 `자연스러운 목소리 쓰기`를 켜면 온라인 음성(크롬 Google, 엣지 Online (Natural)). 실제 기기에서 지연이 줄었는지 사용자 확인 필요
 2. 초보 학습자의 짧은 대화(8단어 미만)는 평가 보류돼 역량 기록이 안 남음. 기준 조정할지 사용자와 논의
 3. (보류) 도메인 구매 → Vercel 연결 + Resend 도메인 인증 → `MAIL_FROM`. 사용자가 먼저 익숙해진 뒤 진행
 4. `claude/friendly-tesla-oymvp0` 브랜치는 반영 안 하기로 함. 세션 권한으로 원격 삭제가 막혀 사용자가 GitHub에서 지울 예정

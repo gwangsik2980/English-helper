@@ -11,13 +11,15 @@ export type VoicePrefs = {
   autoRead: boolean;
   /** Speech rate for partner lines (0.8 = slower). */
   rate: number;
+  /** Prefer online voices that sound more natural but start a second or two later. */
+  naturalVoice: boolean;
   /** The learner has seen the microphone purpose notice. */
   micIntroSeen: boolean;
 };
 
 const KEY = "eq.voice.v1";
 const EVENT = "eq-voice-prefs";
-const DEFAULTS: VoicePrefs = { autoRead: false, rate: 1, micIntroSeen: false };
+const DEFAULTS: VoicePrefs = { autoRead: false, rate: 1, naturalVoice: false, micIntroSeen: false };
 
 // In-memory fallback when storage is blocked (private mode etc.).
 let memory: string | null = null;

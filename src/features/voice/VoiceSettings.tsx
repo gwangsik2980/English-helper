@@ -50,6 +50,21 @@ export function VoiceSettings() {
             onChange={(e) => update({ rate: e.target.checked ? 0.8 : 1 })}
           />
         </label>
+        <label className="flex cursor-pointer items-center justify-between gap-4">
+          <span>
+            <span className="block font-medium">자연스러운 목소리 쓰기</span>
+            <span className="text-sm text-muted">
+              PC 크롬·엣지에서 더 사람 같은 인터넷 음성으로 읽어요. 대신 소리가 나오기까지 1~2초 걸릴 수 있어요. 끄면 기기에 내장된
+              목소리로 바로 읽어요. 아이폰은 원래 내장 목소리라 차이가 거의 없어요.
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            className="h-5 w-5 accent-white"
+            checked={prefs.naturalVoice}
+            onChange={(e) => update({ naturalVoice: e.target.checked })}
+          />
+        </label>
       </fieldset>
 
       <div className="space-y-1 text-sm text-muted">
