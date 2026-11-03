@@ -16,21 +16,21 @@
   - 로그인 상태로도 재설정 링크를 열 수 있게 `(public)` 레이아웃의 로그인 리다이렉트를 로그인·가입·비밀번호 찾기 페이지로 옮김
 - 점검: `npm run typecheck`, `npm run lint`, `npm test`(32개), `npm run build` 모두 통과. Playwright로 재설정 전체 흐름 확인
 
-## 다음 할 일 (사용자 확정 순서)
+## 배포 상태 (2026-11-03)
 
-1. **Resend 실제 발송 연결** (사용자가 가입 진행하기로 함, 키와 도메인 받으면 연결)
-   - 무료 구간: 월 3,000통, 하루 100통 (검색 결과 요약 기준, resend.com은 이 환경 네트워크에서 막혀 직접 확인 못 함)
-   - `onboarding@resend.dev` 발신은 Resend 계정 본인 메일로만 감. 다른 사람에게 보내려면 도메인 DNS 인증 필요
-   - 환경 변수: `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL`(운영 필수)
-2. **배포** (5단계): Vercel + Neon으로 결정. 계정 생성과 연결은 사용자가 직접 함
-   - 코드 준비 완료: Postgres 전환, 첫 마이그레이션 `prisma/migrations/*_init`, `vercel-build`(마이그레이션 → 시드 → 빌드), 대화·완료 API `maxDuration = 60`
-   - `neon init` 완료 (org `org-lucky-water-72006918`, project `weathered-rice-27286962`, branch `production`, services postgres). `neon.ts` 생성, `.neon`은 git 제외
-   - DB 드라이버: Prisma + `@prisma/adapter-pg` + `attachDatabasePool` (Neon 스킬의 Vercel 권장)
-   - 막힌 것: 이 클라우드 환경 네트워크가 neon.tech/neon.com을 막아서 `neon login`, `neon deploy` 못 함. 사용자가 허용 도메인에 추가하거나 로컬 PC에서 실행해야 함
-   - 남은 일: `neon login` → `neon deploy`(.env에 연결 문자열) → 실제 Neon DB로 `npm run db:setup`과 동작 확인 → Vercel 연결
-   - Resend 키는 사용자가 발급함. 클라우드 환경 변수 또는 Vercel 환경 변수로 받기로 함 (채팅에 붙여 넣지 않기)
-   - 휴대폰에서 마이크를 쓰려면 HTTPS가 필요해서 배포(또는 터널)가 있어야 함
-3. main으로 합치는 PR (사용자가 요청하면)
+- 주소: https://english-quest-gwang.vercel.app (예전 `english-quest-rho-eight.vercel.app`은 307로 넘어감)
+- Vercel 프로젝트 `english-quest`(Hobby), 배포 브랜치 `main`, 함수 지역 `sin1`(vercel.json)
+- Neon 프로젝트 `GWANG`(싱가포르). `my-first-project`는 연결 주소가 채팅에 노출돼서 사용자가 삭제함
+- Vercel 환경 변수: `DATABASE_URL`(pooled), `DATABASE_URL_UNPOOLED`(direct), `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `APP_URL`
+- 확인됨: 빌드(마이그레이션·시드 포함) 성공, 실제 Opus로 미션 → 피드백 → XP 40 저장
+- 사용자 확인 대기: 재설정 메일 수신(네이버 주소만 가능), 휴대폰 마이크, 예전 Vercel 프로젝트 `english-helper` 삭제, 함수 지역이 sin1인지
+- GitHub 기본 브랜치가 아직 `claude/laughing-dirac-yd3y27`일 수 있음. main으로 바꾸도록 안내함
+
+## 다음 할 일
+
+1. 역량 관찰이 모두 "성장 중 · 60%"로 뭉뚱그려 나오는 문제 확인 (프롬프트·판정 규칙 원인 파악 후 사용자에게 제안)
+2. 다른 사람도 쓰게 하려면 도메인 구매 → Vercel 연결 + Resend 도메인 인증 → `MAIL_FROM` 설정
+3. `claude/friendly-tesla-oymvp0` 브랜치의 `EQ_ANTHROPIC_API_KEY` 변경은 main에 없음. 필요하면 반영
 
 ## 사용자에게 받은 결정
 
