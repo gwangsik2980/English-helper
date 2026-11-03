@@ -1,107 +1,56 @@
 "use client";
 
-import { useSpeechRecognition } from "./speech-recognition";
 import { useSpeechSynthesis } from "./speech-synthesis";
 import { useVoicePrefs } from "./voice-prefs";
 
+const Toggle = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (on: boolean) => void }) => (
+  <label className="flex cursor-pointer items-center justify-between gap-4">
+    <span className="font-medium">{label}</span>
+    <input
+      type="checkbox"
+      className="h-5 w-5 accent-white"
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+    />
+  </label>
+);
+
 export function VoiceSettings() {
   const { prefs, update } = useVoicePrefs();
-  const stt = useSpeechRecognition(() => {});
   const tts = useSpeechSynthesis();
   const voice = tts.supported ? tts.voiceFor(prefs.naturalVoice) : null;
   const upgraded = voice ? /premium|enhanced|프리미엄|향상/i.test(`${voice.name} ${voice.voiceURI}`) : false;
 
-  return (
-    <div className="space-y-5">
-      <dl className="grid gap-2 text-sm sm:grid-cols-2">
-        <div className="card-soft p-4">
-          <dt className="text-muted">말하기 (음성 인식)</dt>
-          <dd className="mt-1 font-semibold">
-            {stt.state === "unsupported" ? "이 브라우저에서는 쓸 수 없어요" : "사용할 수 있어요"}
-          </dd>
-        </div>
-        <div className="card-soft p-4">
-          <dt className="text-muted">듣기 (소리로 읽기)</dt>
-          <dd className="mt-1 font-semibold">{tts.supported ? "사용할 수 있어요" : "이 브라우저에서는 쓸 수 없어요"}</dd>
-        </div>
-      </dl>
+  if (!tts.supported) {
+    return <p className="text-sm text-muted">이 브라우저는 소리로 읽기를 지원하지 않아요. 텍스트로는 그대로 쓸 수 있어요.</p>;
+  }
 
+  return (
+    <div className="space-y-4">
       <fieldset className="space-y-3">
-        <legend className="label">상대 말 듣기</legend>
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block font-medium">새 답을 자동으로 소리 내어 읽기</span>
-            <span className="text-sm text-muted">꺼 두어도 말풍선 아래 &lsquo;듣기&rsquo;로 언제든 들을 수 있어요.</span>
-          </span>
-          <input
-            type="checkbox"
-            className="h-5 w-5 accent-white"
-            checked={prefs.autoRead}
-            onChange={(e) => update({ autoRead: e.target.checked })}
-          />
-        </label>
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block font-medium">느리게 읽기</span>
-            <span className="text-sm text-muted">평소 속도의 0.8배로 읽어요.</span>
-          </span>
-          <input
-            type="checkbox"
-            className="h-5 w-5 accent-white"
-            checked={prefs.rate < 1}
-            onChange={(e) => update({ rate: e.target.checked ? 0.8 : 1 })}
-          />
-        </label>
-        <label className="flex cursor-pointer items-center justify-between gap-4">
-          <span>
-            <span className="block font-medium">자연스러운 목소리 쓰기</span>
-            <span className="text-sm text-muted">
-              PC 크롬·엣지에서 더 사람 같은 인터넷 음성으로 읽어요. 대신 소리가 나오기까지 1~2초 걸릴 수 있어요. 끄면 기기에 내장된
-              목소리로 바로 읽어요. 아이폰은 원래 내장 목소리라 차이가 거의 없어요.
-            </span>
-          </span>
-          <input
-            type="checkbox"
-            className="h-5 w-5 accent-white"
-            checked={prefs.naturalVoice}
-            onChange={(e) => update({ naturalVoice: e.target.checked })}
-          />
-        </label>
+        <legend className="sr-only">상대 말 듣기</legend>
+        <Toggle label="새 답 자동으로 읽기" checked={prefs.autoRead} onChange={(on) => update({ autoRead: on })} />
+        <Toggle label="느리게 읽기" checked={prefs.rate < 1} onChange={(on) => update({ rate: on ? 0.8 : 1 })} />
+        <Toggle
+          label="인터넷 음성 쓰기 (PC 크롬·엣지)"
+          checked={prefs.naturalVoice}
+          onChange={(on) => update({ naturalVoice: on })}
+        />
       </fieldset>
 
-      {tts.supported && (
-        <div className="card-soft space-y-2 p-4 text-sm">
-          <p>
-            <span className="text-muted">지금 쓰는 목소리 </span>
-            <span className="font-semibold" lang="en">
-              {voice ? voice.name : "영어 목소리를 찾는 중이거나 이 기기에 없어요"}
-            </span>
-            {upgraded && <span className="text-muted"> · 고품질</span>}
+      <div className="card-soft space-y-1 p-4 text-sm">
+        <p>
+          <span className="text-muted">지금 목소리 </span>
+          <span className="font-semibold" lang="en">
+            {voice ? voice.name : "영어 목소리를 찾는 중이거나 이 기기에 없어요"}
+          </span>
+          {upgraded && <span className="text-muted"> · 고품질</span>}
+        </p>
+        {voice && !upgraded && (
+          <p className="text-muted">
+            아이폰은 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어에서 Ava 프리미엄을 받으면 더 자연스러워요.
           </p>
-          {voice && !upgraded && (
-            <p className="text-muted">
-              목소리가 기계적으로 들리면 기기에 고품질 영어 음성을 한 번 내려받아 보세요. 무료이고, 받은 뒤 이 화면을 다시 열면
-              자동으로 그 목소리를 써요.
-              <br />
-              아이폰: 설정 → 손쉬운 사용 → 읽기 및 말하기 → 음성 → 영어에서 Ava나 Zoe 같은 &lsquo;프리미엄&rsquo; 또는
-              &lsquo;향상된&rsquo; 음성을 내려받기
-              <br />
-              맥: 시스템 설정 → 손쉬운 사용 → 읽기 및 말하기 → 시스템 음성 옆 정보 버튼에서 같은 음성 내려받기
-            </p>
-          )}
-        </div>
-      )}
-
-      <div className="space-y-1 text-sm text-muted">
-        <p>
-          음성 기능은 브라우저에 내장된 기능을 써서 무료예요. 마이크 버튼을 누를 때마다 한 문장만 듣고 자동으로 멈추고, 받아 적은
-          문장은 보내기 전에 확인하고 고칠 수 있어요.
-        </p>
-        <p>
-          녹음된 소리는 우리 서버로 오지 않아요. 브라우저의 음성 인식 서비스(Chrome은 Google)가 처리하고, 우리 서버에는 보낸 글자와
-          인식 확신도만 저장돼요. 마이크 권한은 주소창의 마이크 아이콘에서 언제든 끌 수 있어요.
-        </p>
-        <p>이 설정은 지금 쓰는 기기에만 저장돼요.</p>
+        )}
       </div>
     </div>
   );

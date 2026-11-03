@@ -20,6 +20,7 @@ import {
 import { useSpeechSynthesis } from "@/features/voice/speech-synthesis";
 import { useVoicePrefs } from "@/features/voice/voice-prefs";
 import { api, ApiError } from "@/shared/api-client";
+import { usesPattern } from "@/shared/expressions";
 import {
   LOW_TRANSCRIPT_CONFIDENCE,
   MAX_TURN_CHARS,
@@ -50,6 +51,9 @@ type Props = {
   aiRole: string;
   goals: { id: string; descriptionKo: string }[];
   hints: string[];
+  /** Mission key expressions and the learner's own phrasebook ({ en: pattern, ko: meaning }). */
+  keyExpressions: { en: string; ko: string }[];
+  myPhrases: { en: string; ko: string }[];
   initialTurns: ChatTurn[];
   initialSceneComplete: boolean;
 };
@@ -70,7 +74,11 @@ export function ChatRoom(props: Props) {
   );
   const [panel, setPanel] = useState<"none" | "goals" | "hints">("none");
   const [confirmEnd, setConfirmEnd] = useState(false);
-  const [ending, setEnding] = useState<"idle" | "working" | "failed">("idle");
+  const [ending, setEnding] = useState<
+    "idle" | "working" | "failed" | "discarding"
+  >("idle");
+  const [undoing, setUndoing] = useState(false);
+  const [undoError, setUndoError] = useState<string | null>(null);
   const [endError, setEndError] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -198,7 +206,55 @@ export function ChatRoom(props: Props) {
     }
   }
 
+  /** Discard: end without feedback and delete this conversation. */
+  async function discardSession() {
+    setEnding("discarding");
+    setEndError(null);
+    try {
+      await api(`/api/sessions/${props.sessionId}`, { method: "DELETE" });
+      router.replace("/");
+      router.refresh();
+    } catch (err) {
+      setEnding("idle");
+      setEndError(
+        err instanceof ApiError
+          ? err.message
+          : "대화를 지우지 못했어요. 잠시 후 다시 눌러 주세요.",
+      );
+    }
+  }
+
+  /** Takes back my last line (and the reply) and puts it back in the input. */
+  async function undoLast(turnId: string) {
+    setUndoing(true);
+    setUndoError(null);
+    tts.stop();
+    try {
+      const res = await api<{ text: string }>(
+        `/api/sessions/${props.sessionId}/turns/last`,
+        { method: "DELETE" },
+      );
+      setTurns((t) => t.slice(0, t.findIndex((x) => x.id === turnId)));
+      setSceneComplete(false);
+      setDraft(res.text);
+      setVoiceDraft(null);
+      inputRef.current?.focus();
+    } catch (err) {
+      setUndoError(
+        err instanceof ApiError
+          ? err.message
+          : "고치지 못했어요. 잠시 후 다시 눌러 주세요.",
+      );
+    } finally {
+      setUndoing(false);
+    }
+  }
+
   const userTurnCount = turns.filter((t) => t.speaker === "user").length;
+  const userLines = turns.filter((t) => t.speaker === "user").map((t) => t.text);
+  const used = (pattern: string) => userLines.some((l) => usesPattern(l, pattern));
+  const lastUserTurnId = [...turns].reverse().find((t) => t.speaker === "user")?.id;
+  const canUndo = !pending && !listening && ending === "idle";
 
   return (
     <div ref={rootRef} className="fixed inset-x-0 top-0 flex h-dvh flex-col">
@@ -245,7 +301,7 @@ export function ChatRoom(props: Props) {
             onClick={() => setPanel(panel === "hints" ? "none" : "hints")}
             className="chip"
           >
-            힌트 보기
+            표현 보기
           </button>
           {tts.supported && (
             <>
@@ -276,7 +332,10 @@ export function ChatRoom(props: Props) {
         </div>
         {panel !== "none" && (
           <div id="chat-panel" className="mx-auto max-w-3xl px-3 pb-3">
-            <div className="rounded-[1.25rem] bg-surface p-4 text-sm">
+            <div
+              data-scroll
+              className="max-h-[45dvh] overflow-y-auto overscroll-contain rounded-[1.25rem] bg-surface p-4 text-sm"
+            >
               {panel === "goals" ? (
                 <ol className="list-decimal space-y-1 pl-5">
                   {props.goals.map((g) => (
@@ -284,6 +343,46 @@ export function ChatRoom(props: Props) {
                   ))}
                 </ol>
               ) : (
+                <div className="space-y-4">
+                  {[
+                    { title: "핵심 표현", list: props.keyExpressions },
+                    { title: "내 표현장", list: props.myPhrases },
+                  ].map(
+                    (group) =>
+                      group.list.length > 0 && (
+                        <section key={group.title}>
+                          <h3 className="mb-1.5 text-xs font-semibold text-muted">
+                            {group.title}
+                          </h3>
+                          <ul className="space-y-1.5">
+                            {group.list.map((e) => (
+                              <li key={e.en} className="flex items-start gap-2">
+                                <span
+                                  aria-label={used(e.en) ? "씀" : undefined}
+                                  className={`mt-0.5 w-4 shrink-0 text-xs ${used(e.en) ? "text-ok" : "text-subtle"}`}
+                                >
+                                  {used(e.en) ? "✓" : "·"}
+                                </span>
+                                <span>
+                                  <span lang="en" className="font-semibold">
+                                    {e.en}
+                                  </span>
+                                  {e.ko && (
+                                    <span className="block text-xs text-muted">
+                                      {e.ko}
+                                    </span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </section>
+                      ),
+                  )}
+                <section>
+                <h3 className="mb-1.5 text-xs font-semibold text-muted">
+                  예문 (누르면 입력창에 들어가요)
+                </h3>
                 <ul className="space-y-1" lang="en">
                   {props.hints.map((h) => (
                     <li key={h}>
@@ -300,10 +399,9 @@ export function ChatRoom(props: Props) {
                       </button>
                     </li>
                   ))}
-                  <li className="pt-1 text-xs text-muted" lang="ko">
-                    문장을 누르면 입력창에 들어가요. 고쳐서 보내도 좋아요.
-                  </li>
                 </ul>
+                </section>
+                </div>
               )}
             </div>
           </div>
@@ -352,10 +450,31 @@ export function ChatRoom(props: Props) {
                   {tts.speakingId === t.id ? "멈추기" : "듣기"}
                 </button>
               )}
-              {t.speaker === "user" && t.modality === "voice" && (
-                <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted">
-                  <MicIcon /> 말해서 보냄
-                </span>
+              {t.speaker === "user" &&
+                (t.modality === "voice" || t.id === lastUserTurnId) && (
+                  <span className="mt-1 inline-flex items-center gap-2 text-xs text-muted">
+                    {t.modality === "voice" && (
+                      <span className="inline-flex items-center gap-1">
+                        <MicIcon /> 말해서 보냄
+                      </span>
+                    )}
+                    {t.id === lastUserTurnId && canUndo && (
+                      <button
+                        type="button"
+                        disabled={undoing}
+                        onClick={() => void undoLast(t.id)}
+                        className="rounded-full px-2 py-1 hover:text-text"
+                        aria-label="마지막으로 보낸 말 고치기. 상대의 답도 함께 지워져요"
+                      >
+                        {undoing ? "되돌리는 중…" : "고치기"}
+                      </button>
+                    )}
+                  </span>
+                )}
+              {t.id === lastUserTurnId && undoError && (
+                <p role="alert" className="mt-1 text-xs text-bad">
+                  {undoError}
+                </p>
               )}
               {t.tip && (
                 <div className="reveal mt-2 max-w-[85%] rounded-[1.25rem] bg-accent-soft px-4 py-3 text-sm">
@@ -464,28 +583,41 @@ export function ChatRoom(props: Props) {
               </p>
               <p className="text-sm text-muted">
                 {userTurnCount < 2
-                  ? "아직 대화가 짧아서 평가는 보류될 수 있어요. 그래도 지금까지 내용은 저장돼요."
-                  : "끝내면 지금까지의 대화로 피드백을 만들어요. 끝낸 대화에는 더 이어서 말할 수 없어요."}
+                  ? "피드백을 받으면 대화가 짧아서 평가가 보류될 수 있어요. 종료하면 피드백 없이 이 대화를 지워요."
+                  : "피드백 받기는 지금까지의 대화로 평가해요. 종료하면 피드백 없이 이 대화를 지워요."}
               </p>
               {endError && (
                 <p role="alert" className="text-sm text-bad">
                   {endError}
                 </p>
               )}
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  className="btn-primary"
-                  onClick={endSession}
+                  className="btn-ghost px-2 text-bad"
+                  disabled={ending === "discarding"}
+                  onClick={discardSession}
                 >
-                  {ending === "failed" ? "다시 시도" : "끝내고 피드백 받기"}
+                  {ending === "discarding" ? "지우는 중…" : "종료"}
                 </button>
                 <button
                   type="button"
-                  className="btn-secondary"
-                  onClick={() => setConfirmEnd(false)}
+                  className="btn-secondary px-2"
+                  disabled={ending === "discarding"}
+                  onClick={() => {
+                    setConfirmEnd(false);
+                    setEndError(null);
+                  }}
                 >
                   계속 대화하기
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary px-2"
+                  disabled={ending === "discarding"}
+                  onClick={endSession}
+                >
+                  {ending === "failed" ? "다시 시도" : "피드백 받기"}
                 </button>
               </div>
             </div>
@@ -624,11 +756,11 @@ export function ChatRoom(props: Props) {
         className="border-t border-white/10 bg-[rgb(4_5_12/0.5)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
         aria-label="메시지 보내기"
       >
-        <div className="mx-auto flex max-w-3xl items-end gap-2 px-3 py-2">
+        <div className="mx-auto flex max-w-3xl items-end gap-2 px-3 py-2.5">
           <button
             type="button"
             onClick={onMicClick}
-            disabled={Boolean(pending) || ending === "working"}
+            disabled={Boolean(pending) || (ending === "working" || ending === "discarding")}
             aria-pressed={listening}
             aria-label={listening ? "말하기 끝내기" : "마이크로 말하기"}
             className={`btn h-11 w-11 shrink-0 p-0 ${
@@ -661,7 +793,7 @@ export function ChatRoom(props: Props) {
                 ? "듣는 중…"
                 : "영어로 답해 보세요"
             }
-            disabled={Boolean(pending) || ending === "working" || listening}
+            disabled={Boolean(pending) || (ending === "working" || ending === "discarding") || listening}
             className="input max-h-32 min-h-11 flex-1 resize-none rounded-[1.375rem] py-2.5"
             autoComplete="off"
             autoCapitalize="sentences"
@@ -673,17 +805,13 @@ export function ChatRoom(props: Props) {
             disabled={
               !draft.trim() ||
               Boolean(pending) ||
-              ending === "working" ||
+              (ending === "working" || ending === "discarding") ||
               listening
             }
           >
             <ArrowRight className="text-base" />
           </button>
         </div>
-        <p className="mx-auto max-w-3xl px-3 pb-2 text-xs text-muted">
-          Enter로 보내고 Shift+Enter로 줄을 바꿔요. 마이크로 말해도 보내기 전에
-          한 번 확인할 수 있어요. 홈으로 나가도 대화는 저장돼요.
-        </p>
       </form>
     </div>
   );

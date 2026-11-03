@@ -10,6 +10,7 @@ import { AppError } from "@/server/errors";
 import { SKILL_CONFIDENCE_FLOOR } from "@/server/config";
 import { requirePageUser } from "@/server/http";
 import { getMissionByIdOrSlug } from "@/server/repositories/missions";
+import { expressionUsage } from "@/server/services/expression-usage";
 import { getFeedback } from "@/server/services/feedback";
 import { BAND_LABEL_KO } from "@/server/services/progress";
 import { getSession } from "@/server/services/sessions";
@@ -41,6 +42,12 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
       await prisma.reviewItem.findMany({ where: { userId, sourceSessionId: id }, select: { sourceTurnId: true } })
     ).map((r) => r.sourceTurnId),
   );
+  const usage = await expressionUsage(
+    userId,
+    session.missionSlug,
+    session.turns.filter((t) => t.speaker === "user").map((t) => t.text),
+  );
+  const keyUsedCount = usage.key.filter((e) => e.used).length;
   const xpTotal = xp.reduce((s, e) => s + e.amount, 0);
   const next =
     view.status === "ok" && view.feedback.next_practice
@@ -58,6 +65,49 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
           </span>
         </h1>
       </header>
+
+      {(usage.key.length > 0 || usage.myPhraseCount > 0) && (
+        <section aria-labelledby="expr-title" className="card reveal sm:p-6">
+          <h2 id="expr-title" className="section-title">
+            써 본 표현{usage.key.length > 0 && ` ${keyUsedCount}/${usage.key.length}`}
+          </h2>
+          {usage.key.length > 0 && (
+            <ul className="space-y-2">
+              {usage.key.map((e) => (
+                <li key={e.en} className="flex items-start gap-2">
+                  <span
+                    className={`mt-0.5 shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${e.used ? "bg-ok-soft text-ok" : "bg-surface text-muted"}`}
+                  >
+                    {e.used ? "✓ 씀" : "다음에"}
+                  </span>
+                  <span>
+                    <span lang="en" className="font-semibold">
+                      {e.en}
+                    </span>
+                    <span className="block text-sm text-muted">{e.ko}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {usage.myPhraseCount > 0 && (
+            <div className="mt-4 border-t border-line pt-4">
+              <p className="text-sm font-semibold">내 표현장에서 쓴 표현 {usage.myPhrasesUsed.length}개</p>
+              {usage.myPhrasesUsed.length > 0 ? (
+                <ul className="mt-2 space-y-1" lang="en">
+                  {usage.myPhrasesUsed.map((p) => (
+                    <li key={p.phrase} className="text-sm">
+                      ✓ {p.phrase}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-sm text-muted">다음 대화에서는 표현 보기 버튼으로 내 표현을 띄워 놓고 써 보세요.</p>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {view.status === "unavailable" ? (
         <section role="status" className="reveal rounded-[1.25rem] bg-warn-soft p-5">

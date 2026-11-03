@@ -4,6 +4,7 @@ import { MissionMeta } from "@/features/missions/MissionCard";
 import { StartMissionButton } from "@/features/missions/StartMissionButton";
 import { ArrowBadge } from "@/features/ui/Icons";
 import { requirePageUser } from "@/server/http";
+import { keyExpressionsFor } from "@/server/missions/key-expressions";
 import { getMissionByIdOrSlug } from "@/server/repositories/missions";
 import { findActiveSession } from "@/server/services/sessions";
 
@@ -16,6 +17,7 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
   if (!mission) notFound();
   const active = await findActiveSession(userId, mission.id);
   const s = mission.scenario;
+  const expressions = keyExpressionsFor(mission.slug);
 
   return (
     <article className="mx-auto max-w-5xl">
@@ -84,6 +86,28 @@ export default async function MissionDetailPage({ params }: { params: Promise<{ 
           </details>
         </div>
       </div>
+
+      {expressions.length > 0 && (
+        <section aria-labelledby="key-title" className="card reveal mt-4 sm:p-8" style={d(450)}>
+          <h2 id="key-title" className="eyebrow mb-1">
+            오늘의 핵심 표현
+          </h2>
+          <p className="mb-4 text-sm text-muted">대화에서 써 보세요. 결과 화면에서 쓴 표현을 체크해 드려요.</p>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {expressions.map((e) => (
+              <li key={e.en} className="rounded-[1.25rem] bg-surface px-4 py-3">
+                <p lang="en" className="font-semibold">
+                  {e.en}
+                </p>
+                <p className="mt-0.5 text-sm text-muted">{e.ko}</p>
+                <p lang="en" className="mt-1.5 text-sm text-white/80">
+                  예) {e.example}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="sticky bottom-24 z-10 mt-6 lg:hidden">
         {active ? (

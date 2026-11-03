@@ -111,7 +111,7 @@ export function ChangePassword() {
 
   if (!open) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-3 text-center">
         {done && (
           <p role="status" className="rounded-[0.875rem] bg-ok-soft px-3 py-2 text-sm text-ok">
             비밀번호를 바꿨어요. 이 기기를 뺀 다른 기기의 로그인은 모두 풀렸어요.
@@ -132,7 +132,7 @@ export function ChangePassword() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form onSubmit={onSubmit} className="w-full space-y-4 text-left" noValidate>
       <div>
         <label htmlFor="current-password" className="label">
           지금 비밀번호

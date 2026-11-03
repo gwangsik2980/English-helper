@@ -194,6 +194,34 @@ export async function addTurn(userId: string, sessionId: string, input: unknown)
   return { userTurn: toTurnView(userTurn), aiTurn: toTurnView(aiTurn), sceneComplete: reply.sceneComplete };
 }
 
+/**
+ * Takes back the learner's last line (and the partner's reply to it) so a
+ * line sent by mistake can be fixed. Only for open sessions; returns the
+ * removed text so the client can put it back in the input.
+ */
+export async function undoLastUserTurn(userId: string, sessionId: string) {
+  const session = await loadOwnedSession(userId, sessionId);
+  if (session.status !== "active") {
+    throw new AppError("session_closed", "이미 끝난 대화는 고칠 수 없어요.");
+  }
+  const lastUser = [...session.turns].reverse().find((t) => t.speaker === "user");
+  if (!lastUser) throw new AppError("invalid_input", "아직 고칠 내 말이 없어요.");
+  await prisma.turn.deleteMany({ where: { sessionId, sequence: { gte: lastUser.sequence } } });
+  return { text: lastUser.text };
+}
+
+/**
+ * Ends an open session without feedback and deletes it with its turns.
+ * Finished sessions carry feedback and XP, so they are never discarded here.
+ */
+export async function discardSession(userId: string, sessionId: string) {
+  const session = await loadOwnedSession(userId, sessionId);
+  if (session.status !== "active") {
+    throw new AppError("session_closed", "이미 피드백을 받은 대화라 지울 수 없어요.");
+  }
+  await prisma.learningSession.deleteMany({ where: { id: sessionId, userId, status: "active" } });
+}
+
 export async function listRecentSessions(userId: string, take = 20) {
   const rows = await prisma.learningSession.findMany({
     where: { userId },
