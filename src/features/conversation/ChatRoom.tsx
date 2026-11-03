@@ -414,7 +414,9 @@ export function ChatRoom(props: Props) {
         aria-live="polite"
         aria-label="대화 내용"
       >
-        <ol className="mx-auto max-w-3xl space-y-3 px-4 py-6">
+        {/* One pixel taller than the list so it always scrolls and bounces
+            like a messenger, even with a single message. */}
+        <ol className="mx-auto min-h-[calc(100%+1px)] max-w-3xl space-y-3 px-4 py-6">
           {turns.map((t) => (
             <li
               key={t.id}
