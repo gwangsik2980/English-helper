@@ -1,0 +1,203 @@
+// ENGLISH QUEST logical data model (spec section 8).
+// SQLite for local development; switch provider to "postgresql" for deployment.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+
+  profile         UserProfile?
+  authSessions    AuthSession[]
+  sessions        LearningSession[]
+  skillObs        SkillObservation[]
+  missionProgress UserMissionProgress[]
+  xpEvents        XpEvent[]
+  reviewItems     ReviewItem[]
+  reports         FeedbackReport[]
+}
+
+model AuthSession {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserProfile {
+  userId           String   @id
+  displayName      String
+  level            String   @default("beginner")
+  goalsJson        String   @default("[]")
+  correctionMode   String   @default("after_session")
+  dailyMinutes     Int      @default(10)
+  locale           String   @default("ko-KR")
+  onboardingDoneAt DateTime?
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Mission {
+  id                  String   @id
+  slug                String   @unique
+  title               String
+  category            String
+  levelMin            Int
+  levelMax            Int
+  durationMin         Int
+  scenarioJson        String
+  successCriteriaJson String
+  version             Int      @default(1)
+  active              Boolean  @default(true)
+
+  sessions LearningSession[]
+  progress UserMissionProgress[]
+}
+
+model LearningSession {
+  id            String    @id @default(uuid())
+  userId        String
+  missionId     String
+  status        String    @default("active")
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  inputModes    String    @default("text")
+  promptVersion String
+  summaryJson   String?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission  Mission          @relation(fields: [missionId], references: [id])
+  turns    Turn[]
+  feedback SessionFeedback?
+  skillObs SkillObservation[]
+  xpEvents XpEvent[]
+  reports  FeedbackReport[]
+
+  @@index([userId, status])
+}
+
+model Turn {
+  id                   String   @id @default(uuid())
+  sessionId            String
+  sequence             Int
+  speaker              String
+  text                 String
+  modality             String   @default("text")
+  transcriptConfidence Float?
+  clientTurnId         String?
+  // In-conversation correction tip (correction_mode = during), JSON.
+  metaJson             String?
+  createdAt            DateTime @default(now())
+
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, sequence])
+  @@unique([sessionId, clientTurnId])
+}
+
+model SessionFeedback {
+  sessionId        String   @id
+  schemaVersion    String
+  promptVersion    String
+  model            String
+  status           String
+  outcomesJson     String
+  strengthsJson    String
+  improvementsJson String
+  confidenceJson   String
+  nextPracticeJson String?
+  insufficientData Boolean
+  createdAt        DateTime @default(now())
+
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model SkillObservation {
+  id              String   @id @default(uuid())
+  userId          String
+  sessionId       String
+  skillKey        String
+  valueBand       String
+  confidence      Float
+  evidenceTurnIds String
+  createdAt       DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, skillKey])
+}
+
+model UserMissionProgress {
+  userId          String
+  missionId       String
+  completionCount Int      @default(0)
+  bestOutcome     String?
+  lastPlayedAt    DateTime
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id])
+
+  @@id([userId, missionId])
+}
+
+model XpEvent {
+  id             String   @id @default(uuid())
+  userId         String
+  sessionId      String?
+  eventType      String
+  amount         Int
+  reason         String
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LearningSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model ReviewItem {
+  id              String    @id @default(uuid())
+  userId          String
+  sourceTurnId    String?
+  sourceSessionId String?
+  phrase          String
+  suggestedPhrase String
+  reasonKo        String    @default("")
+  status          String    @default("pending")
+  dueAt           DateTime
+  reviewedAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sourceTurnId])
+  @@index([userId, status])
+}
+
+/// Learner reports about wrong or unhelpful AI feedback (spec 7.4).
+model FeedbackReport {
+  id        String   @id @default(uuid())
+  userId    String
+  sessionId String
+  message   String
+  createdAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
