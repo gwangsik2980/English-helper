@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { FloatingBits } from "@/features/ui/FloatingBits";
+import { FluidMode } from "@/features/ui/FluidBackground";
 import { LogoMark } from "@/features/ui/Icons";
 import { optionalPageUser } from "@/server/http";
 
@@ -14,10 +15,11 @@ export default async function PublicLayout({ children }: { children: ReactNode }
   if (await optionalPageUser()) redirect("/");
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
+      <FluidMode mode="hero" />
       <section className="card-ink relative m-0 flex flex-col justify-between rounded-t-none rounded-b-[2rem] px-5 pb-10 pt-8 sm:px-8 lg:m-3 lg:rounded-[2rem] lg:p-12">
         <FloatingBits bits={BITS} className="hidden lg:block" />
         <p className="reveal relative flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <LogoMark className="text-[1.25rem] text-accent" /> ENGLISH QUEST
+          <LogoMark className="text-[1.25rem] text-white" /> ENGLISH QUEST
         </p>
         <div className="relative z-10 mt-14 lg:mt-0">
           <p className="eyebrow reveal" style={{ ["--delay" as string]: "100ms" }}>
@@ -31,7 +33,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
               <span>where it</span>
             </span>
             <span className="line">
-              <span className="script text-[1.35em] text-accent">matters.</span>
+              <span className="script ink-text text-[1.35em]">matters.</span>
             </span>
           </h1>
           <p className="reveal mt-6 max-w-sm text-sm leading-relaxed text-white/70" style={{ ["--delay" as string]: "400ms" }}>

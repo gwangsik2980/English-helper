@@ -4,6 +4,7 @@ import { ReportFeedback } from "@/features/progress/ReportFeedback";
 import { SaveReviewButton } from "@/features/progress/SaveReviewButton";
 import { StartMissionButton } from "@/features/missions/StartMissionButton";
 import { CountUp } from "@/features/ui/CountUp";
+import { CalmFluid } from "@/features/ui/FluidBackground";
 import { prisma } from "@/server/db";
 import { AppError } from "@/server/errors";
 import { requirePageUser } from "@/server/http";
@@ -47,6 +48,7 @@ export default async function ResultPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
+      <CalmFluid />
       <header className="mb-8">
         <p className="eyebrow reveal">미션 결과</p>
         <h1 className="display reveal-lines mt-4 text-4xl sm:text-5xl">

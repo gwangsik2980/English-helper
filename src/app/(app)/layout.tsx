@@ -20,10 +20,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       >
         본문으로 건너뛰기
       </a>
-      <header className="sticky top-0 z-10 border-b border-white/10 bg-[rgb(1_20_17/0.45)] backdrop-blur-xl">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-[rgb(4_5_12/0.6)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[88rem] items-center justify-between gap-4 px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-            <LogoMark className="text-[1.25rem] text-accent" />
+            <LogoMark className="text-[1.25rem] text-white" />
             <span>ENGLISH QUEST</span>
           </Link>
           <TopNav />

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useCalmFluid } from "@/features/ui/FluidBackground";
 import { ArrowRight, LogoMark } from "@/features/ui/Icons";
 import { api, ApiError } from "@/shared/api-client";
 import { MAX_TURN_CHARS } from "@/shared/schemas/domain";
@@ -45,11 +46,8 @@ export function ChatRoom(props: Props) {
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Conversation uses the blue mood; the gradient morphs in and back out.
-  useEffect(() => {
-    document.body.classList.add("theme-blue");
-    return () => document.body.classList.remove("theme-blue");
-  }, []);
+  // Reading screen: keep the ink background calm behind the conversation.
+  useCalmFluid();
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -108,12 +106,12 @@ export function ChatRoom(props: Props) {
 
   return (
     <div className="flex h-dvh flex-col">
-      <header className="border-b border-white/10 bg-[rgb(1_12_20/0.45)] backdrop-blur-xl">
+      <header className="border-b border-white/10 bg-[rgb(4_5_12/0.5)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-3 py-2">
           <Link href="/" className="btn-ghost px-2" aria-label="홈으로 나가기 (대화는 저장돼요)">
             ←
           </Link>
-          <LogoMark aria-hidden className="shrink-0 text-[1.1rem] text-accent" />
+          <LogoMark aria-hidden className="shrink-0 text-[1.1rem] text-white" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-[15px] font-semibold tracking-tight">{props.missionTitle}</h1>
             <p className="truncate text-xs text-muted">
@@ -259,7 +257,7 @@ export function ChatRoom(props: Props) {
       </div>
 
       {confirmEnd && (
-        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-white/10 bg-[rgb(1_12_20/0.6)] backdrop-blur-xl">
+        <div role="dialog" aria-modal="false" aria-labelledby="end-title" className="border-t border-white/10 bg-[rgb(4_5_12/0.7)] backdrop-blur-xl">
           <div className="mx-auto max-w-3xl space-y-2 px-3 py-3">
             <p id="end-title" className="font-semibold">
               대화를 끝낼까요?
@@ -293,7 +291,7 @@ export function ChatRoom(props: Props) {
 
       <form
         onSubmit={onSubmit}
-        className="border-t border-white/10 bg-[rgb(1_12_20/0.45)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
+        className="border-t border-white/10 bg-[rgb(4_5_12/0.5)] pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
         aria-label="메시지 보내기"
       >
         <div className="mx-auto flex max-w-3xl items-end gap-2 px-3 py-2">

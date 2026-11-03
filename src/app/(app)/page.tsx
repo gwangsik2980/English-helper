@@ -52,7 +52,7 @@ export default async function HomePage() {
               <span>연습해 볼까요?</span>
             </span>
             <span className="line">
-              <span lang="en" className="script text-[1.3em] text-accent">
+              <span lang="en" className="script ink-text text-[1.3em]">
                 let&apos;s talk.
               </span>
             </span>
@@ -114,7 +114,7 @@ export default async function HomePage() {
               <ul className="space-y-2 text-sm lg:text-right">
                 {top.reasonsKo.map((r) => (
                   <li key={r} className="text-white/80">
-                    <span aria-hidden className="mr-2 text-accent-from">
+                    <span aria-hidden className="ink-text mr-2">
                       ✦
                     </span>
                     {r}
