@@ -1,7 +1,7 @@
 # 작업 인수인계 (다음 세션용)
 
 새 세션은 이 문서와 `CLAUDE.md`, `README.md`를 먼저 읽고 시작한다.
-배포 브랜치: `main` (Vercel이 main을 배포). 마지막 작업 브랜치: `claude/loving-fermat-2dlpem` (역량 관찰 개선 + 홈 화면 아이콘, main에 반영함)
+배포 브랜치: `main` (Vercel이 main을 배포). 마지막 작업 브랜치: `claude/loving-fermat-2dlpem` (main과 같은 내용, 모두 배포됨)
 
 ## 현재 상태
 
@@ -14,7 +14,7 @@
   - 계정 존재 여부 비노출 (조회와 발송을 `after()`로 응답 뒤에 처리), IP당 15분 5회 + 계정당 1시간 3통
   - 설정 > 계정 보안에서 비밀번호 변경 (`POST /api/account/password`, 지금 비밀번호 확인, 사용자당 15분 5회, 현재 세션만 유지)
   - 로그인 상태로도 재설정 링크를 열 수 있게 `(public)` 레이아웃의 로그인 리다이렉트를 로그인·가입·비밀번호 찾기 페이지로 옮김
-- 역량 관찰 개선 (`claude/loving-fermat-2dlpem`): 모두 "성장 중 · 60%"로 나오던 문제
+- 역량 관찰 개선: 모두 "성장 중 · 60%"로 나오던 문제
   - 원인: 프롬프트에 세 단계 기준이 없고 숫자는 듣기 상한 0.6 하나뿐이라 모델이 가운데 단계와 0.6에 몰림. 화면은 확신도를 퍼센트로 보여 줘서 점수처럼 읽힘
   - 프롬프트(`feedback-prompt.v2`): 단계별 기준, 근거 개수에 따른 확신도 범위, 역량마다 `reason_ko` 한 줄
   - 스키마 `feedback.v2`: skill_observations에 `reason_ko` 추가 (v1 기록에는 없음, 화면은 있을 때만 표시)
@@ -23,7 +23,14 @@
   - 실제 Opus 재현: 중간 수준 대화 → 성장 중 0.55~0.6, 잘한 대화 → 능숙 0.65~0.8. 단계와 확신도가 갈라짐
 - 홈 화면 앱: `src/app/manifest.ts`(이름 QUEST, standalone), `public/icon-*.png`, `src/app/apple-icon.png`, `layout.tsx`의 `appleWebApp`
   - 아이콘은 메인 화면 엠블럼(`LogoMark` 별)을 검은 바탕에 흰색으로 그린 PNG. 다시 만들려면 같은 SVG path를 Playwright로 캡처
-- 로컬 Postgres가 세션 중에 꺼질 수 있음. 테스트가 global-setup에서 실패하면 `service postgresql start`
+- 듣기 목소리 선택(`src/features/voice/voice-choice.ts`, 사용자가 고른 C안)
+  - 기본은 기기 내장 음성 우선(바로 재생). 설정 > 음성 > `자연스러운 목소리 쓰기`(`naturalVoice`, localStorage)를 켜면 온라인 음성(크롬 Google, 엣지 Online (Natural)) 우선
+  - 예전 코드는 natural/google 이름을 먼저 골라 PC에서 1~2초 지연된 것으로 추정
+  - iOS 장난용 음성(Albert, Bubbles 등)은 제외. 아이폰은 두 설정 모두 Samantha
+  - "듣기"를 누를 때마다 목소리를 다시 고름 (설정 변경이 바로 적용)
+- 저작권 표시 `© 2026 GWANG. All rights reserved.` (`src/features/ui/SiteFooter.tsx`)
+  - 앱 화면, 로그인·가입·비밀번호 찾기, 온보딩 맨 아래. 대화 화면은 입력창과 겹쳐서 제외
+- 로그인·가입 화면 정리: 제목 위 작은 문구("다시 오셨네요", "처음 시작하기")와 로그인 아래 데이터 안내 문장 삭제 (사용자 요청. 데이터 안내는 온보딩·설정에 남아 있음)
 - 점검: `npm run typecheck`, `npm run lint`, `npm test`(39개), `npm run build` 모두 통과. 실제 Claude로 미션 → 결과 화면 확인
 
 ## 배포 상태 (2026-11-03)
@@ -37,24 +44,31 @@
   - 실제 Opus로 미션 → 피드백 → XP 40 저장
   - 비밀번호 재설정 메일이 Resend로 `kgs2980@naver.com`에 도착, 링크 주소 정상 (`APP_URL` 반영)
   - 예전 Vercel 프로젝트 `english-helper` 삭제 완료
-  - Vercel 함수 지역 `sin1`, GitHub 기본 브랜치 `main` (사용자 확인)
-- 아직 확인 안 됨
-  - **휴대폰 마이크 음성 입력: 사용자가 집에서 실제 기기로 테스트 예정. 결과 받으면 반영**
-  - 사용자 보고: 듣기 버튼을 누르면 약 2초 뒤에 소리가 남 (아이폰 사파리, PC 크롬·엣지). 온라인 음성을 우선 고르던 코드가 원인으로 추정해 C안으로 수정 (`src/features/voice/voice-choice.ts`)
+  - Vercel 함수 지역 `sin1` (응답 헤더 `x-vercel-id`의 `iad1::sin1`), GitHub 기본 브랜치 `main` (사용자 확인)
+  - 마지막 배포 `ceacdeb`: 로그인 화면에 저작권 표시, 삭제한 문구 없음을 실제 사이트에서 확인 (main push 후 약 60초)
+  - 배포 확인 팁: 로그인 없이 열리는 `/login` HTML에 바뀐 문구가 있는지로 확인. 로그인 뒤 화면만 바뀐 경우는 여기서 확인 불가 → 사용자에게 Vercel Deployments 확인 요청
+- 아직 확인 안 됨 (사용자가 실제 기기로 확인)
+  - **휴대폰 마이크 음성 입력**
+  - **듣기 지연이 줄었는지** (사용자 기기: 아이폰 사파리, PC 크롬·엣지)
+  - 아이폰 홈 화면 추가 시 별 아이콘과 이름 QUEST로 보이는지
+  - 실제 사이트 결과 화면에 "근거 n문장"과 이유 한 줄이 나오는지 (예전 기록은 이유 없이 표시)
 
 ## 다음 할 일
 
-1. 듣기 지연 개선(C안)을 사용자 확인 후 main에 반영: 기본은 기기 내장 음성, 설정 > 음성의 `자연스러운 목소리 쓰기`를 켜면 온라인 음성(크롬 Google, 엣지 Online (Natural)). 실제 기기에서 지연이 줄었는지 사용자 확인 필요
+1. 위 "아직 확인 안 됨" 항목의 사용자 테스트 결과를 받아 반영
 2. 초보 학습자의 짧은 대화(8단어 미만)는 평가 보류돼 역량 기록이 안 남음. 기준 조정할지 사용자와 논의
 3. (보류) 도메인 구매 → Vercel 연결 + Resend 도메인 인증 → `MAIL_FROM`. 사용자가 먼저 익숙해진 뒤 진행
-4. `claude/friendly-tesla-oymvp0` 브랜치는 반영 안 하기로 함. 세션 권한으로 원격 삭제가 막혀 사용자가 GitHub에서 지울 예정
+4. `claude/friendly-tesla-oymvp0` 브랜치는 반영 안 하기로 함(Vercel은 `ANTHROPIC_API_KEY`라 필요 없음). 세션은 지정 브랜치 외 push가 403이라 삭제 못 함 → 사용자가 GitHub Branches에서 삭제
 
 ## 사용자에게 받은 결정
 
 - 모델: 지금은 대화와 피드백 모두 Opus 5.5 (기본값). Max 플랜 월 $100 API 크레딧 안에서 사용
   - 측정값: Opus 미션 1회 약 $0.07, Haiku 약 $0.002. Haiku는 대화는 괜찮지만 대화 중 교정 팁이 없고 피드백 판정이 흔들림
   - `CLAUDE_PARTNER_MODEL`, `CLAUDE_FEEDBACK_MODEL`로 역할별 모델 분리 가능
-- 음성은 무료 브라우저 기능 유지. 사용자가 실제 기기에서 음성 테스트 예정 (결과 받으면 반영)
+- 음성은 무료 브라우저 기능 유지. 듣기 목소리는 C안(기본 내장 음성 + 설정으로 자연스러운 목소리)
+- 도메인·다른 사람 공개는 사용자가 먼저 익숙해진 뒤에
+- 홈 화면 앱 이름 QUEST, 아이콘은 메인 엠블럼
+- 배포는 사용자가 "main에 올려서 배포해줘"라고 할 때만. 작업 브랜치에 먼저 올리고 확인받음
 
 ## 새 세션 시작 순서
 
@@ -71,6 +85,8 @@
 ## 이 환경에서 알아둘 점
 
 - DB는 PostgreSQL. 컨테이너에 Postgres 16이 깔려 있음: `service postgresql start` 후 `postgres/postgres` 계정, DB `english_quest`, `english_quest_test` (세션마다 새로 만들어야 할 수 있음)
+- 로컬 Postgres가 세션 중에 꺼질 수 있음. 테스트가 global-setup에서 실패하면 `service postgresql start`
+- 이 세션은 지정된 작업 브랜치와 main(사용자 요청 시)에만 push 가능. 다른 원격 브랜치 삭제는 403
 - Prisma는 AI가 `migrate reset`을 실행하면 사용자 동의를 요구한다. 테스트 초기화는 `_test` DB만 스키마를 지우고 `migrate deploy` 하는 방식으로 대신함
 - 이 클라우드 환경은 resend.com, neon.tech, neon.com 접속이 막혀 있음. Neon CLI(`neon login`, `neon deploy`)와 실제 Neon DB 직접 접속은 안 됨. Neon·Vercel 작업은 사용자가 대시보드에서 함
 - `.claude/skills/neon-postgres`만 남김 (Neon 공식 스킬). 나머지 Neon 스킬은 기존 로그인·AI 구조와 겹쳐서 지움
