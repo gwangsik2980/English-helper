@@ -1,7 +1,7 @@
 # 작업 인수인계 (다음 세션용)
 
 새 세션은 이 문서와 `CLAUDE.md`, `README.md`를 먼저 읽고 시작한다.
-작업 브랜치: `claude/dreamy-brahmagupta-gf2yoq` (`claude/laughing-dirac-yd3y27`에서 이어서 작업, main에는 아직 합치지 않음)
+배포 브랜치: `main` (Vercel이 main을 배포). 마지막 작업 브랜치: `claude/dreamy-brahmagupta-gf2yoq` (main과 같은 내용)
 
 ## 현재 상태
 
@@ -22,9 +22,15 @@
 - Vercel 프로젝트 `english-quest`(Hobby), 배포 브랜치 `main`, 함수 지역 `sin1`(vercel.json)
 - Neon 프로젝트 `GWANG`(싱가포르). `my-first-project`는 연결 주소가 채팅에 노출돼서 사용자가 삭제함
 - Vercel 환경 변수: `DATABASE_URL`(pooled), `DATABASE_URL_UNPOOLED`(direct), `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `APP_URL`
-- 확인됨: 빌드(마이그레이션·시드 포함) 성공, 실제 Opus로 미션 → 피드백 → XP 40 저장
-- 사용자 확인 대기: 재설정 메일 수신(네이버 주소만 가능), 휴대폰 마이크, 예전 Vercel 프로젝트 `english-helper` 삭제, 함수 지역이 sin1인지
-- GitHub 기본 브랜치가 아직 `claude/laughing-dirac-yd3y27`일 수 있음. main으로 바꾸도록 안내함
+- 확인됨
+  - 빌드(마이그레이션·시드 포함) 성공
+  - 실제 Opus로 미션 → 피드백 → XP 40 저장
+  - 비밀번호 재설정 메일이 Resend로 `kgs2980@naver.com`에 도착, 링크 주소 정상 (`APP_URL` 반영)
+  - 예전 Vercel 프로젝트 `english-helper` 삭제 완료
+- 아직 확인 안 됨
+  - **휴대폰 마이크 음성 입력: 사용자가 집에서 실제 기기로 테스트 예정. 결과 받으면 반영**
+  - Vercel 함수 지역이 실제로 `sin1`인지 (배포 상세 화면에서 확인)
+  - GitHub 기본 브랜치를 main으로 바꿨는지
 
 ## 다음 할 일
 
@@ -39,10 +45,22 @@
   - `CLAUDE_PARTNER_MODEL`, `CLAUDE_FEEDBACK_MODEL`로 역할별 모델 분리 가능
 - 음성은 무료 브라우저 기능 유지. 사용자가 실제 기기에서 음성 테스트 예정 (결과 받으면 반영)
 
+## 새 세션 시작 순서
+
+1. 이 문서, `CLAUDE.md`, `README.md`를 읽는다. 배포 브랜치는 `main`이다.
+2. 새 세션에 지정된 작업 브랜치가 따로 있으면 `origin/main`에서 그 브랜치를 만들어 작업한다.
+3. `npm ci` (postinstall이 `prisma generate`까지 함)
+4. 로컬 DB: `service postgresql start` 후
+   `su postgres -c "psql -c \"alter user postgres password 'postgres'\" -c 'create database english_quest' -c 'create database english_quest_test'"`
+5. `cp .env.example .env` (기본값이 위 로컬 DB를 가리킴) → `npm run db:setup`
+6. 점검: `npm run typecheck && npm run lint && npm test && npm run build`
+7. main에 push하면 Vercel이 바로 배포한다. 사용자가 요청할 때만 main에 올린다.
+
 ## 이 환경에서 알아둘 점
 
 - DB는 PostgreSQL. 컨테이너에 Postgres 16이 깔려 있음: `service postgresql start` 후 `postgres/postgres` 계정, DB `english_quest`, `english_quest_test` (세션마다 새로 만들어야 할 수 있음)
 - Prisma는 AI가 `migrate reset`을 실행하면 사용자 동의를 요구한다. 테스트 초기화는 `_test` DB만 스키마를 지우고 `migrate deploy` 하는 방식으로 대신함
+- 이 클라우드 환경은 resend.com, neon.tech, neon.com 접속이 막혀 있음. Neon CLI(`neon login`, `neon deploy`)와 실제 Neon DB 직접 접속은 안 됨. Neon·Vercel 작업은 사용자가 대시보드에서 함
 - `.claude/skills/neon-postgres`만 남김 (Neon 공식 스킬). 나머지 Neon 스킬은 기존 로그인·AI 구조와 겹쳐서 지움
 
 - API 키는 클라우드 환경 변수 `EQ_ANTHROPIC_API_KEY`로 들어와 있다. 앱은 `ANTHROPIC_API_KEY`를 읽으므로 실행할 때만 넘긴다:
@@ -53,7 +71,7 @@
 - Tailwind v4: 재사용 클래스는 `@utility`로 선언해야 `@apply` 가능.
 - ESLint의 React 컴파일러 규칙: effect 안 setState, 렌더 중 ref 쓰기 금지. 브라우저 기능 감지는 `useSyncExternalStore` 사용.
 - Haiku 5.5는 server-side fallback 미지원이라 `fallbackParams()`가 모델별로 넣고 뺀다.
-- 서버 종료 시 `pkill -f "next start"`는 셸까지 종료하므로 PID로 kill 한다.
+- 서버 종료 시 `pkill -f "next start"`나 `pgrep -f`는 그 문자열이 든 자기 셸까지 잡아서 종료하므로, `ps -eo pid,args | grep ... | grep -v grep`으로 PID를 찾아 kill 한다.
 - 브라우저 확인은 Playwright(사전 설치됨)로 한다. 음성은 헤드리스에 마이크가 없어 가짜 인식기를 주입해 테스트했다.
 
 ## 사용자 선호 (요약)
