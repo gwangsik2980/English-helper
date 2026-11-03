@@ -382,7 +382,7 @@ body[data-fluid="calm"] .fluid-scrim {
   border: 1px solid rgb(255 255 255 / 0.16);
   background: rgb(255 255 255 / 0.07);
   padding: 0.75rem 1rem;
-  font-size: 15px; /* ≥15px keeps iOS from zooming on focus */
+  font-size: 16px; /* iPhone Safari zooms the page when a field under 16px gets focus */
   color: #fff;
   outline: none;
   transition:
