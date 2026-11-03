@@ -16,11 +16,12 @@ export function useSpeechSynthesis() {
   const supported = useSyncExternalStore(noopSubscribe, hasSynthesis, () => false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     if (!hasSynthesis()) return;
     // Some browsers (Chrome) fill the voice list late; asking once starts the load.
-    const load = () => void window.speechSynthesis.getVoices();
+    const load = () => setVoices(window.speechSynthesis.getVoices());
     load();
     window.speechSynthesis.addEventListener("voiceschanged", load);
     return () => {
@@ -56,5 +57,8 @@ export function useSpeechSynthesis() {
     window.speechSynthesis.speak(u);
   }, []);
 
-  return { supported, speakingId, error, speak, stop };
+  /** The voice speak() would use now, for showing in settings. */
+  const voiceFor = useCallback((preferNatural: boolean) => pickEnglishVoice(voices, preferNatural), [voices]);
+
+  return { supported, speakingId, error, speak, stop, voiceFor };
 }

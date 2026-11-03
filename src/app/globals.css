@@ -71,6 +71,14 @@ html {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Chat screen: the page behind the conversation must not move (see use-chat-viewport.ts). */
+html.chat-lock,
+html.chat-lock body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   min-height: 100dvh;
   background: var(--bg);

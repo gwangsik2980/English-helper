@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { pickEnglishVoice, type VoiceLike } from "@/features/voice/voice-choice";
 
-const v = (name: string, lang: string, localService: boolean, isDefault = false): VoiceLike => ({
+const v = (name: string, lang: string, localService: boolean, isDefault = false, voiceURI?: string): VoiceLike => ({
   name,
   lang,
   localService,
   default: isDefault,
+  voiceURI,
 });
 
 // Roughly what PC Chrome and Edge report.
@@ -32,6 +33,20 @@ describe("pickEnglishVoice", () => {
   it("skips novelty voices and non-English voices on iPhone", () => {
     expect(pickEnglishVoice(iphone, false)?.name).toBe("Samantha");
     expect(pickEnglishVoice(iphone, true)?.name).toBe("Samantha");
+  });
+
+  it("prefers a downloaded Premium or Enhanced Apple voice over the compact one in both modes", () => {
+    const upgraded = [
+      ...iphone,
+      v("Samantha", "en-US", true, false, "com.apple.voice.enhanced.en-US.Samantha"),
+      v("Ava", "en-US", true, false, "com.apple.voice.premium.en-US.Ava"),
+    ];
+    expect(pickEnglishVoice(upgraded, false)?.voiceURI).toBe("com.apple.voice.premium.en-US.Ava");
+    expect(pickEnglishVoice(upgraded, true)?.voiceURI).toBe("com.apple.voice.premium.en-US.Ava");
+    const enhancedOnly = [...iphone, v("Zoe (Enhanced)", "en-US", true)];
+    expect(pickEnglishVoice(enhancedOnly, false)?.name).toBe("Zoe (Enhanced)");
+    // An online voice that merely says "enhanced" is not an on-device upgrade.
+    expect(pickEnglishVoice([...edge, v("Enhanced Cloud", "en-US", false)], false)?.name).toMatch(/^Microsoft Zira/);
   });
 
   it("falls back to an online voice when no on-device English voice exists, and to null when none at all", () => {
