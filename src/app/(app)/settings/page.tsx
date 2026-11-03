@@ -49,10 +49,10 @@ export default async function SettingsPage() {
         <h2 id="privacy-title" className="section-title">
           개인정보와 데이터
         </h2>
-        <a href="/api/account/export" className="btn-light">
-          내 데이터 내려받기 (JSON)
-        </a>
-        <div className="border-t border-line pt-4">
+        <div className="flex flex-wrap items-start gap-2">
+          <a href="/api/account/export" className="btn-light">
+            데이터 내려받기
+          </a>
           <DeleteAccount />
         </div>
       </section>
